@@ -20,6 +20,9 @@ public:
 	BigInteger(std::uint64_t);
 	//BigInteger(std::string); // TODO: ADD IT LATER
 	
+	BigInteger& operator=(const BigInteger& b);
+	BigInteger& operator+(const BigInteger& b);
+
 	bool get_sign();
 
 	void print();

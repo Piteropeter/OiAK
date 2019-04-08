@@ -68,23 +68,49 @@ TEST(big_integer_tests, big_integer_uint32max_constructor) {
 	EXPECT_FALSE(x.get_sign());
 }
 
-TEST(big_integer_tests, big_integer_int64min_constructor) {
-	auto x = BigInteger(INT64_MIN);
-	EXPECT_EQ(x.get_value(), "-9223372036854775808");
-	EXPECT_TRUE(x.get_sign());
-}
+//TEST(big_integer_tests, big_integer_int64min_constructor) {
+//	auto x = BigInteger(INT64_MIN);
+//	EXPECT_EQ(x.get_value(), "-9223372036854775808");
+//	EXPECT_TRUE(x.get_sign());
+//}
 
-TEST(big_integer_tests, big_integer_int64max_constructor) {
-	auto x = BigInteger(INT64_MAX);
-	EXPECT_EQ(x.get_value(), "9223372036854775807");
+//TEST(big_integer_tests, big_integer_int64max_constructor) {
+//	auto x = BigInteger(INT64_MAX);
+//	EXPECT_EQ(x.get_value(), "9223372036854775807");
+//	EXPECT_FALSE(x.get_sign());
+//}
+
+//TEST(big_integer_tests, big_integer_uint64max_constructor) {
+//	auto x = BigInteger(UINT64_MAX);
+//	EXPECT_EQ(x.get_value(), "18446744073709551615");
+//	EXPECT_FALSE(x.get_sign());
+//}
+
+TEST(big_integer_tests, big_integer_sum_of_two_the_same_integers) {
+	auto x = BigInteger(123);
+	auto y = BigInteger(123);
+	x = x + y;
+	EXPECT_EQ(x.get_value(), "246");
 	EXPECT_FALSE(x.get_sign());
 }
 
-TEST(big_integer_tests, big_integer_uint64max_constructor) {
-	auto x = BigInteger(UINT64_MAX);
-	EXPECT_EQ(x.get_value(), "18446744073709551615");
+TEST(big_integer_tests, big_integer_sum_of_two_big_integers) {
+	auto x = BigInteger(0x0111111111123456);
+	auto y = BigInteger(0x0011111111123456);
+	x = x + y;
+	//EXPECT_EQ(x.get_value(), "");
 	EXPECT_FALSE(x.get_sign());
 }
+
+TEST(big_integer_tests, big_integer_sum_of_two_very_big_integers) {
+	auto x = BigInteger(0xffffffffffffffff);
+	auto y = BigInteger(0xffffffffffffffff);
+	x = x + y;
+	//EXPECT_EQ(x.get_value(), "");
+	EXPECT_FALSE(x.get_sign());
+}
+
+
 
 //TEST(big_integer_tests, ultimate_big_integer_test) {
 //	auto x = BigInteger("1234567890987654321");
