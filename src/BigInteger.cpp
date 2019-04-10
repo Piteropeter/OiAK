@@ -25,7 +25,7 @@ BigInteger::BigInteger(std::int64_t value) {
         storage.resize(2);
 
         storage[0] = value << 32 >> 32;
-		storage[1] = value >> 32;
+        storage[1] = value >> 32;
     }
 }
 
@@ -34,8 +34,8 @@ BigInteger::BigInteger(std::uint64_t value) {
         storage.resize(2);
 
         storage[0] = value << 32 >> 32;
-		storage[1] = value >> 32;
-	}
+        storage[1] = value >> 32;
+    }
 }
 
 // OPERATORS
@@ -50,7 +50,7 @@ const std::uint32_t BigInteger::operator[](std::size_t i) const {
 
 BigInteger& BigInteger::operator=(const BigInteger& b) {
     storage = b.storage;
-	return *this;
+    return *this;
 }
 
 BigInteger& BigInteger::operator+(const BigInteger& b) {
@@ -79,6 +79,22 @@ BigInteger& BigInteger::operator+(const BigInteger& b) {
 
         } else
             storage[i] = static_cast<std::uint32_t>(tmp);
+    }
+    return *this;
+}
+
+BigInteger& BigInteger::operator-(const BigInteger& b) {
+    std::uint64_t tmp = 0;
+    bool borrow_bit = false;
+
+    if(storage.size() < b.storage.size())
+        storage.resize(b.storage.size());
+
+    for(auto i = 0u; i < storage.size(); i++) {
+
+
+
+
     }
     return *this;
 }
@@ -113,11 +129,11 @@ std::string BigInteger::to_string() {
 
     std::stringstream ss;
     if(sign)
-    ss << '-';
+        ss << '-';
     for(auto it = storage.crbegin(); it != storage.crend(); it++)
         ss /*<< std::hex*/ << *it;
     return ss.str();
 
-    //return transform_to_decimal(ss.str());
+    // return transform_to_decimal(ss.str());
 }
 } // namespace oiak
