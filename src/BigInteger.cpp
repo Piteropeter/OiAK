@@ -3,7 +3,6 @@
 namespace oiak {
 
 // CONSTRUCTORS
-// No other constructors are needed thanks to implicit conversion
 
 BigInteger::BigInteger(std::int32_t value) {
     if(value < 0) {
@@ -41,6 +40,14 @@ BigInteger::BigInteger(std::uint64_t value) {
 
 // OPERATORS
 
+std::uint32_t BigInteger::operator[](std::size_t i) {
+    return storage[i];
+}
+
+const std::uint32_t BigInteger::operator[](std::size_t i) const {
+    return storage[i];
+}
+
 BigInteger& BigInteger::operator=(const BigInteger& b) {
     storage = b.storage;
 	return *this;
@@ -68,7 +75,6 @@ BigInteger& BigInteger::operator+(const BigInteger& b) {
             storage[i] = tmp << 32 >> 32;
             if(i + 1 == storage.size())
                 storage.resize(storage.size() + 1);
-            // storage[i + 1] += tmp >> 32;
             carry_bit = true;
 
         } else
@@ -79,12 +85,12 @@ BigInteger& BigInteger::operator+(const BigInteger& b) {
 
 // OTHER FUNCTIONS
 
-bool BigInteger::get_sign() {
+bool BigInteger::get_sign() const {
     return sign;
 }
 
-void BigInteger::print() {
-    std::cout << get_value();
+std::size_t BigInteger::size() const {
+    return storage.size();
 }
 
 std::string transform_to_decimal(const std::string& hex_string) {
@@ -93,7 +99,7 @@ std::string transform_to_decimal(const std::string& hex_string) {
     return str;
 }
 
-std::string BigInteger::get_value() {
+std::string BigInteger::to_string() {
     // std::stringstream ss;
     // for(auto i = 0u; i < storage.size(); i++) {
     //	for(auto j = 0u; j < 8; j++) {
