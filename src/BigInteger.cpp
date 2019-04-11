@@ -16,6 +16,8 @@ BigInteger::BigInteger(std::uint32_t value) {
     storage[0] = static_cast<std::uint32_t>(value);
 }
 
+// #TO-DO co jeśli int64_t zawiera wartość, którą można zapisać jako int32_t?
+// aka: if w 26. linii -> jeśli false, to BigInteger nie inicjalizuje się?
 BigInteger::BigInteger(std::int64_t value) {
     if(value < 0) {
         sign = true;
