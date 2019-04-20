@@ -78,6 +78,34 @@ TEST(big_integer_tests, big_integer_uint32max_constructor) {
     EXPECT_FALSE(x.get_sign());
 }
 
+TEST(big_integer_tests, big_integer_int32_0_constructor) {
+	auto x = BigInteger(int32_t(0));
+	EXPECT_EQ(x.size(), 1);
+	EXPECT_EQ(x[0], 0);
+	EXPECT_FALSE(x.get_sign());
+}
+
+TEST(big_integer_tests, big_integer_uint32_0_constructor) {
+	auto x = BigInteger(int32_t(0));
+	EXPECT_EQ(x.size(), 1);
+	EXPECT_EQ(x[0], 0);
+	EXPECT_FALSE(x.get_sign());
+}
+
+TEST(big_integer_tests, big_integer_int32_default_constructor) {
+	auto x = BigInteger(0);
+	EXPECT_EQ(x.size(), 1);
+	EXPECT_EQ(x[0], 0);
+	EXPECT_FALSE(x.get_sign());
+}
+
+TEST(big_integer_tests, big_integer_uint32_default_constructor) {
+	auto x = BigInteger(0u);
+	EXPECT_EQ(x.size(), 1);
+	EXPECT_EQ(x[0], 0);
+	EXPECT_FALSE(x.get_sign());
+}
+
 TEST(big_integer_tests, big_integer_int64min_constructor) {
     auto x = BigInteger(INT64_MIN);
     EXPECT_EQ(x.size(), 2);
@@ -100,6 +128,34 @@ TEST(big_integer_tests, big_integer_uint64max_constructor) {
     EXPECT_EQ(x[1], 4294967295);
     EXPECT_EQ(x[0], 4294967295);
     EXPECT_FALSE(x.get_sign());
+}
+
+TEST(big_integer_tests, big_integer_int64_0_constructor) {
+	auto x = BigInteger(int64_t(0));
+	EXPECT_EQ(x.size(), 1);
+	EXPECT_EQ(x[0], 0);
+	EXPECT_FALSE(x.get_sign());
+}
+
+TEST(big_integer_tests, big_integer_uint64_0_constructor) {
+	auto x = BigInteger(uint64_t(0));
+	EXPECT_EQ(x.size(), 1);
+	EXPECT_EQ(x[0], 0);
+	EXPECT_FALSE(x.get_sign());
+}
+
+TEST(big_integer_tests, big_integer_int64_default_constructor) {
+	auto x = BigInteger(0);
+	EXPECT_EQ(x.size(), 1);
+	EXPECT_EQ(x[0], 0);
+	EXPECT_FALSE(x.get_sign());
+}
+
+TEST(big_integer_tests, big_integer_uint64_default_constructor) {
+	auto x = BigInteger(0u);
+	EXPECT_EQ(x.size(), 1);
+	EXPECT_EQ(x[0], 0);
+	EXPECT_FALSE(x.get_sign());
 }
 
 TEST(big_integer_tests, big_integer_sum_of_two_the_same_integers) {
@@ -129,6 +185,28 @@ TEST(big_integer_tests, big_integer_sum_of_two_very_big_integers) {
     EXPECT_EQ(x[1], 4294967295);
     EXPECT_EQ(x[0], 4294967294);
     EXPECT_FALSE(x.get_sign());
+}
+
+TEST(big_integer_tests, big_integer_sum_of_two_integers_left_bigger) {
+	auto x = BigInteger(0xffffffffffffffff);
+	auto y = BigInteger(0xffffffff);
+	x = x + y;
+	EXPECT_EQ(x.size(), 3);
+	EXPECT_EQ(x[2], 1);
+	EXPECT_EQ(x[1], 0);
+	EXPECT_EQ(x[0], 4294967294);
+	EXPECT_FALSE(x.get_sign());
+}
+
+TEST(big_integer_tests, big_integer_sum_of_two_integers_right_bigger) {
+	auto x = BigInteger(0xffffffff);
+	auto y = BigInteger(0xffffffffffffffff);
+	x = x + y;
+	EXPECT_EQ(x.size(), 3);
+	EXPECT_EQ(x[2], 1);
+	EXPECT_EQ(x[1], 0);
+	EXPECT_EQ(x[0], 4294967294);
+	EXPECT_FALSE(x.get_sign());
 }
 
 // TEST(big_integer_tests, ultimate_big_integer_test) {

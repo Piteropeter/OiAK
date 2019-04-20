@@ -17,24 +17,30 @@ BigInteger::BigInteger(std::uint32_t value) {
 }
 
 BigInteger::BigInteger(std::int64_t value) {
-    if(value < 0) {
-        sign = true;
-        value *= -1;
-    }
-    if(value > static_cast<std::int64_t>(UINT32_MAX) || value < -static_cast<std::int64_t>(UINT32_MAX)) {
-        storage.resize(2);
-
+    if(value < static_cast<std::int64_t>(INT32_MAX) && value > -static_cast<std::int64_t>(INT32_MAX))
+        *this = BigInteger(static_cast<std::int32_t>(value));
+    else {
+        if(value < 0) {
+            sign = true;
+            value *= -1;
+        }
+        if(value > static_cast<std::int64_t>(INT32_MAX) || value < -static_cast<std::int64_t>(INT32_MAX)) {
+            storage.resize(2);
+            storage[1] = value >> 32;
+        }
         storage[0] = value << 32 >> 32;
-        storage[1] = value >> 32;
     }
 }
 
 BigInteger::BigInteger(std::uint64_t value) {
-    if(value > UINT32_MAX) {
-        storage.resize(2);
-
+    if(value < static_cast<std::uint64_t>(UINT32_MAX))
+        *this = BigInteger(static_cast<std::uint32_t>(value));
+    else {
+        if(value > UINT32_MAX) {
+            storage.resize(2);
+            storage[1] = value >> 32;
+        }
         storage[0] = value << 32 >> 32;
-        storage[1] = value >> 32;
     }
 }
 
