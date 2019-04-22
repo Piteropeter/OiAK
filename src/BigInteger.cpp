@@ -95,13 +95,30 @@ BigInteger& BigInteger::operator-(const BigInteger& b) {
 
     if(storage.size() < b.storage.size())
         storage.resize(b.storage.size());
+	// TU TRZA NA SPOKOJNIE USIASC
+    if(!this->sign && !b.sign) {
+        for(auto i = 0u; i < storage.size(); i++) {
+            if(i < b.storage.size())
+                tmp = static_cast<std::int64_t>(storage[i]) - static_cast<std::int64_t>(b.storage[i]);
+            else
+                tmp = static_cast<std::int64_t>(storage[i]);
 
-    for(auto i = 0u; i < storage.size(); i++) {
+			if(borrow_bit) {
+				tmp--;
+				borrow_bit = false;
+			}
 
+			if(tmp > UINT32_MAX) {
+				storage[i] = tmp << 32 >> 32;
+				if(i + 1 == storage.size())
+					storage.resize(storage.size() + 1);
+				borrow_bit = true;
 
-
-
+			} else
+				storage[i] = static_cast<std::uint32_t>(tmp);
+        }
     }
+
     return *this;
 }
 
