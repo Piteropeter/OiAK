@@ -90,7 +90,7 @@ BigInteger& BigInteger::operator+(const BigInteger& b) {
 }
 
 BigInteger& BigInteger::operator-(const BigInteger& b) {
-    std::uint64_t tmp = 0;
+    std::int64_t tmp = 0;
     bool borrow_bit = false;
 
     if(storage.size() < b.storage.size())
@@ -104,22 +104,48 @@ BigInteger& BigInteger::operator-(const BigInteger& b) {
                 tmp = static_cast<std::int64_t>(storage[i]);
 
 			if(borrow_bit) {
-				tmp--;
+				//if(sign)
+				//	tmp++;
+				//else
+					tmp--;
 				borrow_bit = false;
 			}
 
-			if(tmp > UINT32_MAX) {
-				storage[i] = tmp << 32 >> 32;
-				if(i + 1 == storage.size())
-					storage.resize(storage.size() + 1);
+			if(tmp < 0) {
+				storage[i] = static_cast<uint64_t>(tmp * -1) << 32 >> 32;
+				//if(i + 1 == storage.size())
+					//storage.resize(storage.size() + 1);
 				borrow_bit = true;
 
 			} else
 				storage[i] = static_cast<std::uint32_t>(tmp);
         }
+		if(borrow_bit && tmp < 0) {
+			storage.resize(storage.size() + 1);
+			storage[storage.size() - 1] = 1;
+			sign = true;
+		}
     }
 
     return *this;
+}
+
+BigInteger& BigInteger::operator<(const BigInteger& b) {
+	if(storage.size() < b.storage.size())
+		storage.resize(b.storage.size());
+	
+	
+	
+	
+	return *this;
+}
+
+BigInteger& BigInteger::operator>(const BigInteger& b) {
+	
+	
+	
+	
+	return *this;
 }
 
 // OTHER FUNCTIONS

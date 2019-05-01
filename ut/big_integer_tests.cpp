@@ -209,6 +209,46 @@ TEST(big_integer_tests, big_integer_sum_of_two_integers_right_bigger) {
 	EXPECT_FALSE(x.get_sign());
 }
 
+TEST(big_integer_tests, big_integer_subtraction_of_two_32bit_integers_result_positive) {
+	auto x = BigInteger(0x22222222);
+	auto y = BigInteger(0x11111111);
+	x = x - y;
+	EXPECT_EQ(x.size(), 1);
+	EXPECT_EQ(x[0], 0x11111111);
+	EXPECT_FALSE(x.get_sign());
+}
+
+TEST(big_integer_tests, big_integer_subtraction_of_two_32bit_integers_result_negative) {
+	auto x = BigInteger(0x11111111);
+	auto y = BigInteger(0x22222222);
+	x = x - y;
+	EXPECT_EQ(x.size(), 1);
+	EXPECT_EQ(x[0], 0x11111111);
+	EXPECT_TRUE(x.get_sign());
+}
+
+TEST(big_integer_tests, big_integer_subtraction_of_two_64bit_integers_result_positive) {
+	auto x = BigInteger(0x2222222222222222);
+	auto y = BigInteger(0x1111111111111111);
+	x = x - y;
+	EXPECT_EQ(x.size(), 1);
+	EXPECT_EQ(x[0], 0x1111111111111111);
+	EXPECT_FALSE(x.get_sign());
+}
+
+TEST(big_integer_tests, big_integer_subtraction_of_two_64bit_integers_result_negative) {
+	auto x = BigInteger(0x1111111111111111);
+	auto y = BigInteger(0x2222222222222222);
+	x = x - y;
+	EXPECT_EQ(x.size(), 1);
+	EXPECT_EQ(x[0], 0x1111111111111111);
+	EXPECT_TRUE(x.get_sign());
+}
+
+
+
+
+
 // TEST(big_integer_tests, ultimate_big_integer_test) {
 //	auto x = BigInteger("1234567890987654321");
 //	auto y = BigInteger("9999999999999999999");
