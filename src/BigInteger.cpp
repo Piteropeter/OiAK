@@ -95,7 +95,7 @@ BigInteger& BigInteger::operator-(const BigInteger& b) {
 
     if(storage.size() < b.storage.size())
         storage.resize(b.storage.size());
-	// TU TRZA NA SPOKOJNIE USIASC
+
     if(!this->sign && !b.sign) {
         for(auto i = 0u; i < storage.size(); i++) {
             if(i < b.storage.size())
@@ -103,49 +103,51 @@ BigInteger& BigInteger::operator-(const BigInteger& b) {
             else
                 tmp = static_cast<std::int64_t>(storage[i]);
 
-			if(borrow_bit) {
-				//if(sign)
-				//	tmp++;
-				//else
-					tmp--;
-				borrow_bit = false;
-			}
+            if(borrow_bit) {
+                tmp--;
+                borrow_bit = false;
+            }
 
-			if(tmp < 0) {
-				storage[i] = static_cast<uint64_t>(tmp * -1) << 32 >> 32;
-				//if(i + 1 == storage.size())
-					//storage.resize(storage.size() + 1);
-				borrow_bit = true;
-
-			} else
-				storage[i] = static_cast<std::uint32_t>(tmp);
+            if(tmp < 0) {
+                storage[i] = (static_cast<std::int64_t>(UINT32_MAX) + tmp) >> 32;
+                borrow_bit = true;
+            } else
+                storage[i] = static_cast<std::uint32_t>(tmp);
         }
-		if(borrow_bit && tmp < 0) {
-			storage.resize(storage.size() + 1);
-			storage[storage.size() - 1] = 1;
-			sign = true;
-		}
+        if(borrow_bit && tmp < 0) {
+            storage.resize(storage.size() + 1);
+            storage[storage.size() - 1] = 1;
+            sign = true;
+        }
     }
 
     return *this;
 }
 
-BigInteger& BigInteger::operator<(const BigInteger& b) {
-	if(storage.size() < b.storage.size())
-		storage.resize(b.storage.size());
-	
-	
-	
-	
-	return *this;
-}
+BigInteger& BigInteger::operator*(const BigInteger& b) {
+    std::vector<std::uint64_t> tmp(storage.size() + b.storage.size(), 0);
 
-BigInteger& BigInteger::operator>(const BigInteger& b) {
-	
-	
-	
-	
-	return *this;
+    for(auto i = 0u; i < storage.size(); i++) {
+        for(auto j = 0u; j < b.storage.size(); j++) {
+            tmp[i + j] += static_cast<std::uint64_t>(storage[i]) * static_cast<std::uint64_t>(b.storage[j]);
+            if(tmp[i + j] > UINT32_MAX) {
+                tmp[i + j + 1] += tmp[i + j] >> 32;
+                tmp[i + j] = tmp[i + j] << 32 >> 32;
+            }
+        }
+    }
+
+    storage.resize(tmp.size());
+    for(auto i = 0u; i < storage.size(); i++) {
+        storage[i] = static_cast<std::uint32_t>(tmp[i]);
+    }
+
+    if(sign && !b.sign || !sign && b.sign)
+        sign = true;
+    else
+        sign = false;
+
+    return *this;
 }
 
 // OTHER FUNCTIONS

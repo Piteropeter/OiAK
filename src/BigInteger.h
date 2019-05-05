@@ -24,10 +24,10 @@ public:
     BigInteger& operator=(const BigInteger& b);
     BigInteger& operator+(const BigInteger& b);
     BigInteger& operator-(const BigInteger& b);
-    // BigInteger& operator*(const BigInteger& b);
+    BigInteger& operator*(const BigInteger& b);
     // BigInteger& operator/(const BigInteger& b);
-     BigInteger& operator<(const BigInteger& b);
-     BigInteger& operator>(const BigInteger& b);
+    // BigInteger& operator<(const BigInteger& b);
+    // BigInteger& operator>(const BigInteger& b);
 
     bool get_sign() const;
     std::size_t size() const;
