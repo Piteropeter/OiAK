@@ -150,6 +150,48 @@ BigInteger& BigInteger::operator*(const BigInteger& b) {
     return *this;
 }
 
+BigInteger& BigInteger::operator/(const BigInteger& b) {
+	BigInteger tmp;
+
+
+
+
+
+
+	if(sign && !b.sign || !sign && b.sign)
+		sign = true;
+	else
+		sign = false;
+
+    return *this;
+}
+
+bool BigInteger::operator<(const BigInteger& b) const {
+    if(storage.size() < b.storage.size())
+        return true;
+    else if(storage.size() > b.storage.size())
+        return false;
+    else {
+        if(storage.back() < b.storage.back())
+            return true;
+        else
+            return false;
+    }
+}
+
+bool BigInteger::operator>(const BigInteger& b) const {
+    if(storage.size() > b.storage.size())
+        return true;
+    else if(storage.size() < b.storage.size())
+        return false;
+    else {
+        if(storage.back() > b.storage.back())
+            return true;
+        else
+            return false;
+    }
+}
+
 // OTHER FUNCTIONS
 
 bool BigInteger::get_sign() const {
@@ -166,7 +208,8 @@ std::string transform_to_decimal(const std::string& hex_string) {
     return str;
 }
 
-std::string BigInteger::to_string() {
+std::string BigInteger::to_string(std::uint8_t base) {
+
     // std::stringstream ss;
     // for(auto i = 0u; i < storage.size(); i++) {
     //	for(auto j = 0u; j < 8; j++) {

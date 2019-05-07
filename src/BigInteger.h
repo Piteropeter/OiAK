@@ -25,13 +25,16 @@ public:
     BigInteger& operator+(const BigInteger& b);
     BigInteger& operator-(const BigInteger& b);
     BigInteger& operator*(const BigInteger& b);
-    // BigInteger& operator/(const BigInteger& b);
-    // BigInteger& operator<(const BigInteger& b);
-    // BigInteger& operator>(const BigInteger& b);
+    BigInteger& operator/(const BigInteger& b);
+    bool operator<(const BigInteger& b) const;
+    bool operator>(const BigInteger& b) const;
+    // bool operator<=(const BigInteger& b) const;
+    // bool operator>=(const BigInteger& b) const;
+    // bool operator==(const BigInteger& b) const;
 
     bool get_sign() const;
     std::size_t size() const;
-    std::string to_string();
+    std::string to_string(std::uint8_t base = 10);
 };
 
 } // namespace oiak

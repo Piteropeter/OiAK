@@ -266,12 +266,11 @@ TEST(big_integer_tests, big_integer_multiplying_two_32bit_integers_result_positi
 }
 
 TEST(big_integer_tests, big_integer_multiplying_two_32bit_integers_result_negative) {
-    auto x = BigInteger(0xffffffff);
-    auto y = BigInteger(std::int64_t(0xffffffff) * -1);
-    x = x * y;
-    // EXPECT_EQ(x.size(), 2);
-    EXPECT_EQ(x[1], 0xfffffffe);
-    EXPECT_EQ(x[0], 0x00000001);
+    auto x = BigInteger(-1);
+    auto y = BigInteger(0xffffffff);
+	x = x * y;
+    //EXPECT_EQ(x.size(), 1);
+    EXPECT_EQ(x[0], 0xffffffff);
     EXPECT_TRUE(x.get_sign());
 }
 
@@ -297,6 +296,36 @@ TEST(big_integer_tests, big_integer_multiplying_two_64bit_integers_result_negati
     EXPECT_EQ(x[1], 0x80000000);
     EXPECT_EQ(x[0], 0x00000000);
     EXPECT_TRUE(x.get_sign());
+}
+
+
+
+
+
+
+/// DIVIDING
+
+
+
+
+
+
+
+
+TEST(big_integer_tests, compare_operators_test1) {
+    auto x = BigInteger(0xffffffffffffffff);
+    auto y = BigInteger(0xffffffffffffffff);
+
+    EXPECT_FALSE(x > y);
+    EXPECT_FALSE(x < y);
+}
+
+TEST(big_integer_tests, compare_operators_test2) {
+    auto x = BigInteger(0xffffffff);
+    auto y = BigInteger(0xffffffffffffffff);
+
+    EXPECT_TRUE(x < y);
+    EXPECT_FALSE(x > y);
 }
 
 // TEST(big_integer_tests, ultimate_big_integer_test) {
