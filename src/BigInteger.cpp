@@ -44,6 +44,18 @@ BigInteger::BigInteger(std::uint64_t value) {
     }
 }
 
+BigInteger::BigInteger(const std::vector<std::uint32_t>& storage, bool sign) {
+    this->storage = std::vector<std::uint32_t>(storage.rbegin(), storage.rend());
+    this->sign = sign;
+}
+
+BigInteger::BigInteger(std::vector<std::uint32_t>::const_iterator begin, std::vector<std::uint32_t>::const_iterator end, bool sign) {
+    auto rbegin = static_cast<std::vector<std::uint32_t>::const_reverse_iterator>(begin);
+    auto rend = static_cast<std::vector<std::uint32_t>::const_reverse_iterator>(end);
+    this->storage = std::vector<std::uint32_t>(rend, rbegin);
+    this->sign = sign;
+}
+
 // OPERATORS
 
 std::uint32_t BigInteger::operator[](std::size_t i) {
@@ -153,17 +165,27 @@ BigInteger& BigInteger::operator*(const BigInteger& b) {
 BigInteger& BigInteger::operator/(const BigInteger& b) {
 	BigInteger tmp;
 
+	if(*this < b)
+		*this = tmp;
+	else {
+		//auto rbegin = b.storage.rbegin();
+		//auto rend = b.storage.rbegin() + b.size;
+		//tmp = BigInteger(rbegin, rend);
 
 
 
 
 
-	if(sign && !b.sign || !sign && b.sign)
-		sign = true;
-	else
-		sign = false;
 
-    return *this;
+
+
+
+		if(sign && !b.sign || !sign && b.sign)
+			sign = true;
+		else
+			sign = false;
+	}
+	return *this;
 }
 
 bool BigInteger::operator<(const BigInteger& b) const {
