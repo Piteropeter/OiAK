@@ -39,7 +39,7 @@ public:
 
     bool get_sign() const;
     std::size_t size() const;
-    std::string to_string(std::uint8_t = 10);
+    std::string to_string(std::uint8_t = 16);
 };
 
 } // namespace oiak

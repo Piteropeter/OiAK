@@ -8,7 +8,7 @@ TEST(big_integer_operator_tests, sum_of_two_the_same_integers) {
     auto x = BigInteger(123);
     auto y = BigInteger(123);
     x = x + y;
-    EXPECT_EQ(x.to_string(), "246");
+    EXPECT_EQ(x[0], 246);
     EXPECT_FALSE(x.get_sign());
 }
 

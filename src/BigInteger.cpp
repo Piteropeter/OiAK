@@ -231,25 +231,14 @@ std::string transform_to_decimal(const std::string& hex_string) {
 }
 
 std::string BigInteger::to_string(std::uint8_t base) {
+	if(base != 16)
+		throw std::runtime_error("Unsupported to_string base!");
 
-    // std::stringstream ss;
-    // for(auto i = 0u; i < storage.size(); i++) {
-    //	for(auto j = 0u; j < 8; j++) {
-    //	//char character = storage[i]
-    //		//ss << std::hex << /*static_cast<char>*/(storage[i] << 28 - j*4 >> 28 - j*4);
-    //		ss << std::hex << /*static_cast<char>*/(storage[i] << 28 - j*4 >> 28 - j*4);
-    //	}
-    //	//ss << std::hex << storage[i];
-    //}
-    // return ss.str();
-
-    std::stringstream ss;
+	std::stringstream ss;
     if(sign)
         ss << '-';
     for(auto it = storage.crbegin(); it != storage.crend(); it++)
-        ss /*<< std::hex*/ << *it;
+        ss << std::hex << *it;
     return ss.str();
-
-    // return transform_to_decimal(ss.str());
 }
 } // namespace oiak
