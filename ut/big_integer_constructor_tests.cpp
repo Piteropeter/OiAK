@@ -179,4 +179,9 @@ TEST(big_integer_constructor_tests, iterator_constructor) {
     EXPECT_TRUE(x.get_sign());
 }
 
+int main(int argc, char **argv) {
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+
 } // namespace ut
