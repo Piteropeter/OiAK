@@ -96,7 +96,7 @@ TEST(big_integer_operator_tests, multiplying_two_32bit_integers) {
     auto x = BigInteger(0x8ab);
     auto y = BigInteger(0xb78);
     x = x * y;
-    // EXPECT_EQ(x.size(), 1);
+    EXPECT_EQ(x.size(), 1);
     EXPECT_EQ(x[0], 0x636928);
     EXPECT_FALSE(x.get_sign());
 }
@@ -115,7 +115,7 @@ TEST(big_integer_operator_tests, multiplying_two_32bit_integers_result_negative)
     auto x = BigInteger(-1);
     auto y = BigInteger(0xffffffff);
     x = x * y;
-    // EXPECT_EQ(x.size(), 1);
+    EXPECT_EQ(x.size(), 1);
     EXPECT_EQ(x[0], 0xffffffff);
     EXPECT_TRUE(x.get_sign());
 }

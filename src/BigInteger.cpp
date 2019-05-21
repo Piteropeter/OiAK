@@ -4,6 +4,17 @@ namespace oiak {
 
 // CONSTRUCTORS
 
+	void BigInteger::normalize()
+	{
+			if(storage.back() == 0) {
+				auto it = storage.begin() + storage.size() - 1;
+				while(*it == 0 && it != storage.end()) {
+					storage.erase(it);
+					it = storage.begin() + storage.size() - 1;
+				}
+			}
+	}
+
 BigInteger::BigInteger(std::int32_t value) {
     if(value < 0) {
         sign = true;
@@ -159,6 +170,7 @@ BigInteger& BigInteger::operator*(const BigInteger& b) {
     else
         sign = false;
 
+	normalize();
     return *this;
 }
 
@@ -231,14 +243,46 @@ std::string transform_to_decimal(const std::string& hex_string) {
 }
 
 std::string BigInteger::to_string(std::uint8_t base) {
-	if(base != 16)
-		throw std::runtime_error("Unsupported to_string base!");
-
+	if(base != 16) {
+		if(base == 10 && storage.size() == 1) {
+			std::stringstream ss;
+			if(sign)
+				ss << '-';
+			ss << storage[0];
+			return ss.str();
+		}
+		else 
+			throw std::runtime_error("Unsupported to_string base!");
+	}	
+		
 	std::stringstream ss;
     if(sign)
         ss << '-';
-    for(auto it = storage.crbegin(); it != storage.crend(); it++)
-        ss << std::hex << *it;
+	ss << "0x";
+    for(auto it = storage.crbegin(); it != storage.crend(); it++) {
+		if(it == storage.crbegin()) {
+			ss << std::hex << *it;
+			continue;
+		}
+
+		if(*it < 0x1)
+			ss << '0';
+		if(*it < 0x10)
+			ss << '0';
+		if(*it < 0x100)
+			ss << '0';
+		if(*it < 0x1000)
+			ss << '0';
+		if(*it < 0x10000)
+			ss << '0';
+		if(*it < 0x100000)
+			ss << '0';
+		if(*it < 0x1000000)
+			ss << '0';
+		if(*it < 0x10000000)
+			ss << '0';
+		ss << std::hex << *it;
+	}
     return ss.str();
 }
 } // namespace oiak

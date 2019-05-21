@@ -10,6 +10,7 @@ namespace oiak {
 class BigInteger {
     bool sign = false;
     std::vector<std::uint32_t> storage = std::vector<std::uint32_t>(1, 0);
+	void normalize();
 
 public:
     BigInteger() = default;
