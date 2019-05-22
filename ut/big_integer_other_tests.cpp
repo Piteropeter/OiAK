@@ -20,24 +20,28 @@ TEST(big_integer_other_tests, to_string3) {
 }
 
 TEST(big_integer_other_tests, to_string4) {
-	auto x = BigInteger({1,2,3,4,5});
-	EXPECT_EQ(x.to_string(), "0x100000002000000030000000400000005");
+    std::vector<std::uint32_t> storage = {1, 2, 3, 4, 5};
+    auto x = BigInteger(storage);
+    EXPECT_EQ(x.to_string(), "0x100000002000000030000000400000005");
 }
 
 TEST(big_integer_other_tests, to_string5) {
-	auto x = BigInteger({1,2,3,4,5});
-	EXPECT_THROW(x.to_string(10), std::runtime_error);
+    std::vector<std::uint32_t> storage = {1, 2, 3, 4, 5};
+    auto x = BigInteger(storage);
+    EXPECT_THROW(x.to_string(10), std::runtime_error);
 }
 
 TEST(big_integer_other_tests, size) {
-	auto x = BigInteger({1,2,3,4,5});
-	EXPECT_EQ(x.size(), 5);
+    std::vector<std::uint32_t> storage = {1, 2, 3, 4, 5};
+    auto x = BigInteger(storage);
+    EXPECT_EQ(x.size(), 5);
 }
 
 TEST(big_integer_other_tests, sign) {
-	auto x = BigInteger({1,2,3,4,5});
-	x = x * BigInteger(-1);
-	EXPECT_TRUE(x.get_sign());
+    std::vector<std::uint32_t> storage = {1, 2, 3, 4, 5};
+    auto x = BigInteger(storage);
+    x = x * BigInteger(-1);
+    EXPECT_TRUE(x.get_sign());
 }
 
 } // namespace ut

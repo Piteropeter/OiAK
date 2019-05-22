@@ -67,6 +67,23 @@ BigInteger::BigInteger(std::vector<std::uint32_t>::const_iterator begin, std::ve
     this->sign = sign;
 }
 
+BigInteger::BigInteger(std::string str) {
+    if(str[0] == '-') {
+        sign = true;
+        str = str.substr(1, str.size());
+    }
+
+    std::vector<std::uint32_t> storage;
+    std::size_t i = str.size(), j = str.size() > 7 ? str.size() - 8 : 0;
+    for(auto x = 0; x < str.size() / 8; x++, i -= 8, j -= 8)
+        storage.push_back(std::stoul(str.substr(j, 8), 0, 16));
+
+    if(str.size() % 8)
+        storage.push_back(std::stoul(str.substr(0, i), 0, 16));
+
+    this->storage = storage;
+}
+
 // OPERATORS
 
 std::uint32_t BigInteger::operator[](std::size_t i) {

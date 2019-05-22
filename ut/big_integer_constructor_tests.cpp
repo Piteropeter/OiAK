@@ -179,4 +179,52 @@ TEST(big_integer_constructor_tests, iterator_constructor) {
     EXPECT_TRUE(x.get_sign());
 }
 
+TEST(big_integer_constructor_tests, string_constructor1) {
+
+    auto x = BigInteger("123");
+    EXPECT_EQ(x.size(), 1);
+    EXPECT_EQ(x[0], 0x123);
+    EXPECT_FALSE(x.get_sign());
+}
+
+TEST(big_integer_constructor_tests, string_constructor2) {
+
+    auto x = BigInteger("1234567890");
+    EXPECT_EQ(x.size(), 2);
+    EXPECT_EQ(x[1], 0x12);
+    EXPECT_EQ(x[0], 0x34567890);
+    EXPECT_FALSE(x.get_sign());
+}
+
+TEST(big_integer_constructor_tests, string_constructor3) {
+
+    auto x = BigInteger("-ffffffffffffffffffffffff");
+    EXPECT_EQ(x.size(), 3);
+    EXPECT_EQ(x[2], 0xffffffff);
+    EXPECT_EQ(x[1], 0xffffffff);
+    EXPECT_EQ(x[0], 0xffffffff);
+    EXPECT_TRUE(x.get_sign());
+}
+
+TEST(big_integer_constructor_tests, string_constructor4) {
+
+    auto x = BigInteger("-fffffffffffffffffffffff");
+    EXPECT_EQ(x.size(), 3);
+    EXPECT_EQ(x[2], 0xfffffff);
+    EXPECT_EQ(x[1], 0xffffffff);
+    EXPECT_EQ(x[0], 0xffffffff);
+    EXPECT_TRUE(x.get_sign());
+}
+
+TEST(big_integer_constructor_tests, string_constructor5) {
+
+    auto x = BigInteger("-fffffffffffffffffffffffff");
+    EXPECT_EQ(x.size(), 4);
+    EXPECT_EQ(x[3], 0xf);
+    EXPECT_EQ(x[2], 0xffffffff);
+    EXPECT_EQ(x[1], 0xffffffff);
+    EXPECT_EQ(x[0], 0xffffffff);
+    EXPECT_TRUE(x.get_sign());
+}
+
 } // namespace ut
