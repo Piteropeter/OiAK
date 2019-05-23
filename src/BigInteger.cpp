@@ -296,4 +296,31 @@ std::string BigInteger::to_string() {
     }
     return ss.str();
 }
+
+
+// Helper methods
+int BigInteger::compareStorage(const BigInteger& other) {
+    auto s1 = storage;
+    int len1 = s1.size();
+    auto s2 = other.storage;
+    int len2 = s2.size();
+
+	if(len1 < len2)
+        return -1;
+    if(len1 > len2)
+        return 1;
+
+	for(auto i = 0; i < len1; i++) {
+        int x = s1[i];
+        int y = s2[i];
+
+		if(x != y) {
+            if(x < y)
+                return -1;
+            else
+                return 1;
+		}
+        return 0;
+	}
+}
 } // namespace oiak

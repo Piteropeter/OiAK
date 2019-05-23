@@ -40,7 +40,14 @@ public:
 	void set_sign(bool);
     bool get_sign() const;
     std::size_t size() const;
+<<<<<<< HEAD
     std::string to_string();
+=======
+    std::string to_string(std::uint8_t = 16);
+
+	//Helper methods
+    int compareStorage(const BigInteger&);
+>>>>>>> Add storage comparison
 };
 
 } // namespace oiak
