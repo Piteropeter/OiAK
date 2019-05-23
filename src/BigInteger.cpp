@@ -101,33 +101,20 @@ BigInteger& BigInteger::operator=(const BigInteger& b) {
 }
 
 BigInteger& BigInteger::operator+(const BigInteger& b) {
-    std::uint64_t tmp = 0;
-    bool carry_bit = false;
-
-    if(storage.size() < b.storage.size())
-        storage.resize(b.storage.size());
-
-    for(auto i = 0u; i < storage.size(); i++) {
-        if(i < b.storage.size())
-            tmp = static_cast<std::uint64_t>(storage[i]) + static_cast<std::uint64_t>(b.storage[i]);
-        else
-            tmp = static_cast<std::uint64_t>(storage[i]);
-
-        if(carry_bit) {
-            tmp++;
-            carry_bit = false;
-        }
-
-        if(tmp > UINT32_MAX) {
-            storage[i] = tmp << 32 >> 32;
-            if(i + 1 == storage.size())
-                storage.resize(storage.size() + 1);
-            carry_bit = true;
-
-        } else
-            storage[i] = static_cast<std::uint32_t>(tmp);
+    if(!sign && !b.sign) {
+        add(b.storage);
     }
-    return *this;
+
+	// Zero! Mo¿e zmiana reprezentacji znaku dla ³atwiejszej obs³ugi?
+	int cmp = compareStorage(b);
+    if(cmp == 0) {
+        storage.clear();
+	}
+
+	if(cmp > 0) {
+		
+	}
+	return *this;
 }
 
 BigInteger& BigInteger::operator-(const BigInteger& b) {
@@ -297,7 +284,6 @@ std::string BigInteger::to_string() {
     return ss.str();
 }
 
-
 // Helper methods
 int BigInteger::compareStorage(const BigInteger& other) {
     auto s1 = storage;
@@ -322,5 +308,34 @@ int BigInteger::compareStorage(const BigInteger& other) {
 		}
         return 0;
 	}
+}
+
+void BigInteger::add(std::vector<std::uint32_t> s2) {
+    std::uint64_t tmp = 0;
+    bool carry_bit = false;
+
+    if(storage.size() < s2.size())
+        storage.resize(s2.size());
+
+    for(auto i = 0u; i < storage.size(); i++) {
+        if(i < s2.size())
+            tmp = static_cast<std::uint64_t>(storage[i]) + static_cast<std::uint64_t>(s2[i]);
+        else
+            tmp = static_cast<std::uint64_t>(storage[i]);
+
+        if(carry_bit) {
+            tmp++;
+            carry_bit = false;
+        }
+
+        if(tmp > UINT32_MAX) {
+            storage[i] = tmp << 32 >> 32;
+            if(i + 1 == storage.size())
+                storage.resize(storage.size() + 1);
+            carry_bit = true;
+
+        } else
+            storage[i] = static_cast<std::uint32_t>(tmp);
+    }
 }
 } // namespace oiak

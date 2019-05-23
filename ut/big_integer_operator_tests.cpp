@@ -170,18 +170,4 @@ TEST(big_integer_operator_tests, compare_operators_test2) {
 //	EXPECT_EQ(z.to_string(), "12345678909876543208765432109012345679");
 //}
 
-TEST(big_integer_helper_tests, compare_storages) {
-    auto x = BigInteger(256);
-    auto y = BigInteger(-356);
-	EXPECT_EQ(x.compareStorage(y), -1);
-
-	x = BigInteger(556);
-    y = BigInteger(-356);
-    EXPECT_EQ(x.compareStorage(y), 1);
-
-	x = BigInteger(256);
-    y = BigInteger(256);
-    EXPECT_EQ(x.compareStorage(y), 0);
-}
-
 } // namespace ut
