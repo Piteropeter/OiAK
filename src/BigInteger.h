@@ -20,22 +20,22 @@ public:
     BigInteger(std::uint64_t);
 	BigInteger(const std::vector<std::uint32_t>&, bool = false);
 	BigInteger(std::vector<std::uint32_t>::const_iterator, std::vector<std::uint32_t>::const_iterator, bool = false);
-    // BigInteger(std::string); // TODO: ADD IT LATER
+    BigInteger(std::string); // TODO: ADD IT LATER
 
     std::uint32_t operator[](std::size_t i);
     const std::uint32_t operator[](std::size_t i) const;
-    BigInteger& operator=(const BigInteger& b);
-    BigInteger& operator+(const BigInteger& b);
-    BigInteger& operator-(const BigInteger& b);
-    BigInteger& operator*(const BigInteger& b);
-    BigInteger& operator/(const BigInteger& b);
+    BigInteger& operator=(const BigInteger&);
+    BigInteger& operator+(const BigInteger&);
+    BigInteger& operator-(const BigInteger&);
+    BigInteger& operator*(const BigInteger&);
+    BigInteger& operator/(const BigInteger&);
 	//BigInteger& operator<<(std::uint64_t);
 	//BigInteger& operator>>(std::uint64_t);
-    bool operator<(const BigInteger& b) const;
-    bool operator>(const BigInteger& b) const;
-    // bool operator<=(const BigInteger& b) const;
-    // bool operator>=(const BigInteger& b) const;
-    // bool operator==(const BigInteger& b) const;
+    bool operator<(const BigInteger&) const;
+    bool operator>(const BigInteger&) const;
+    // bool operator<=(const BigInteger&) const;
+    // bool operator>=(const BigInteger&) const;
+    // bool operator==(const BigInteger&) const;
 
 
     bool get_sign() const;
