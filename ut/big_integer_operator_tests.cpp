@@ -64,14 +64,14 @@ TEST(big_integer_operator_tests, subtraction_of_two_32bit_integers_result_positi
     EXPECT_FALSE(x.get_sign());
 }
 
-// TEST(big_integer_operator_tests, subtraction_of_two_32bit_integers_result_negative) { // TODO: FIX THIS
-//	auto x = BigInteger(0x11111111);
-//	auto y = BigInteger(0x22222222);
-//	x = x - y;
-//	EXPECT_EQ(x.size(), 1);
-//	EXPECT_EQ(x[0], 0x11111111);
-//	EXPECT_TRUE(x.get_sign());
-//}
+TEST(big_integer_operator_tests, subtraction_of_two_32bit_integers_result_negative) { // TODO: FIX THIS
+	auto x = BigInteger(0x11111111);
+	auto y = BigInteger(0x22222222);
+	x = x - y;
+	EXPECT_EQ(x.size(), 1);
+	EXPECT_EQ(x[0], 0x11111111);
+	EXPECT_TRUE(x.get_sign());
+}
 
 TEST(big_integer_operator_tests, subtraction_of_two_64bit_integers_result_positive) {
     auto x = BigInteger(0x2222222222222222);
@@ -169,5 +169,19 @@ TEST(big_integer_operator_tests, compare_operators_test2) {
 //
 //	EXPECT_EQ(z.to_string(), "12345678909876543208765432109012345679");
 //}
+
+TEST(big_integer_helper_tests, compare_storages) {
+    auto x = BigInteger(256);
+    auto y = BigInteger(-356);
+	EXPECT_EQ(x.compareStorage(y), -1);
+
+	x = BigInteger(556);
+    y = BigInteger(-356);
+    EXPECT_EQ(x.compareStorage(y), 1);
+
+	x = BigInteger(256);
+    y = BigInteger(256);
+    EXPECT_EQ(x.compareStorage(y), 0);
+}
 
 } // namespace ut
