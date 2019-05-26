@@ -95,6 +95,7 @@ const std::uint32_t BigInteger::operator[](std::size_t i) const {
 }
 
 BigInteger& BigInteger::operator=(const BigInteger& b) {
+    sign = b.sign;
     storage = b.storage;
     return *this;
 }
@@ -260,46 +261,45 @@ std::string transform_to_decimal(const std::string& hex_string) {
 }
 
 std::string BigInteger::to_string(std::uint8_t base) {
-	if(base != 16) {
-		if(base == 10 && storage.size() == 1) {
-			std::stringstream ss;
-			if(sign)
-				ss << '-';
-			ss << storage[0];
-			return ss.str();
-		}
-		else 
-			throw std::runtime_error("Unsupported to_string base!");
-	}	
-		
-	std::stringstream ss;
+    if(base != 16) {
+        if(base == 10 && storage.size() == 1) {
+            std::stringstream ss;
+            if(sign)
+                ss << '-';
+            ss << storage[0];
+            return ss.str();
+        } else
+            throw std::runtime_error("Unsupported to_string base!");
+    }
+
+    std::stringstream ss;
     if(sign)
         ss << '-';
-	ss << "0x";
-    for(auto it = storage.crbegin(); it != storage.crend(); it++) {
-		if(it == storage.crbegin()) {
-			ss << std::hex << *it;
-			continue;
-		}
 
-		if(*it < 0x1)
-			ss << '0';
-		if(*it < 0x10)
-			ss << '0';
-		if(*it < 0x100)
-			ss << '0';
-		if(*it < 0x1000)
-			ss << '0';
-		if(*it < 0x10000)
-			ss << '0';
-		if(*it < 0x100000)
-			ss << '0';
-		if(*it < 0x1000000)
-			ss << '0';
-		if(*it < 0x10000000)
-			ss << '0';
-		ss << std::hex << *it;
-	}
+    for(auto it = storage.crbegin(); it != storage.crend(); it++) {
+        if(it == storage.crbegin()) {
+            ss << std::hex << *it;
+            continue;
+        }
+
+        if(*it < 0x1)
+            ss << '0';
+        if(*it < 0x10)
+            ss << '0';
+        if(*it < 0x100)
+            ss << '0';
+        if(*it < 0x1000)
+            ss << '0';
+        if(*it < 0x10000)
+            ss << '0';
+        if(*it < 0x100000)
+            ss << '0';
+        if(*it < 0x1000000)
+            ss << '0';
+        if(*it < 0x10000000)
+            ss << '0';
+        ss << std::hex << *it;
+    }
     return ss.str();
 }
 } // namespace oiak
