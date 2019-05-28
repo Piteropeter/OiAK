@@ -75,7 +75,7 @@ BigInteger::BigInteger(std::string str) {
 
     std::vector<std::uint32_t> storage;
     std::size_t i = str.size(), j = str.size() > 7 ? str.size() - 8 : 0;
-    for(auto x = 0; x < str.size() / 8; x++, i -= 8, j -= 8)
+    for(auto x = 0u; x < str.size() / 8; x++, i -= 8, j -= 8)
         storage.push_back(std::stoul(str.substr(j, 8), 0, 16));
 
     if(str.size() % 8)
@@ -246,6 +246,11 @@ bool BigInteger::operator>(const BigInteger& b) const {
 
 // OTHER FUNCTIONS
 
+void BigInteger::set_sign(bool value) {
+    if(value != sign)
+        sign = value;
+}
+
 bool BigInteger::get_sign() const {
     return sign;
 }
@@ -254,24 +259,13 @@ std::size_t BigInteger::size() const {
     return storage.size();
 }
 
-std::string transform_to_decimal(const std::string& hex_string) {
-    std::string str(hex_string.size() * 2, '0');
+//std::string transform_to_decimal(const std::string& hex_string) {
+//    std::string str(hex_string.size() * 2, '0');
+//
+//    return str;
+//}
 
-    return str;
-}
-
-std::string BigInteger::to_string(std::uint8_t base) {
-    if(base != 16) {
-        if(base == 10 && storage.size() == 1) {
-            std::stringstream ss;
-            if(sign)
-                ss << '-';
-            ss << storage[0];
-            return ss.str();
-        } else
-            throw std::runtime_error("Unsupported to_string base!");
-    }
-
+std::string BigInteger::to_string() {
     std::stringstream ss;
     if(sign)
         ss << '-';
