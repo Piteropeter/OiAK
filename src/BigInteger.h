@@ -20,7 +20,7 @@ public:
     BigInteger(std::uint64_t);
 	BigInteger(const std::vector<std::uint32_t>&, bool = false);
 	BigInteger(std::vector<std::uint32_t>::const_iterator, std::vector<std::uint32_t>::const_iterator, bool = false);
-    BigInteger(std::string); // TODO: ADD IT LATER
+    BigInteger(std::string);
 
     std::uint32_t operator[](std::size_t i);
     const std::uint32_t operator[](std::size_t i) const;
@@ -37,10 +37,10 @@ public:
     // bool operator>=(const BigInteger&) const;
     // bool operator==(const BigInteger&) const;
 
-
+	void set_sign(bool);
     bool get_sign() const;
     std::size_t size() const;
-    std::string to_string(std::uint8_t = 16);
+    std::string to_string();
 };
 
 } // namespace oiak

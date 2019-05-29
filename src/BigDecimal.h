@@ -9,7 +9,6 @@
 namespace oiak {
 
 class BigDecimal {
-    bool sign = false;
 	BigInteger significand;
 	BigInteger exponent;
 
@@ -17,6 +16,7 @@ public:
 	BigDecimal() = default;
 	BigDecimal(BigInteger significand, BigInteger exponent, bool sign = false);
 	BigDecimal(double value);
+	BigDecimal(std::string str);
 
 
     bool get_sign() const;
