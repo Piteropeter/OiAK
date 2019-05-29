@@ -109,16 +109,16 @@ TEST(big_integer_constructor_tests, uint32_default_constructor) {
 TEST(big_integer_constructor_tests, int64min_constructor) {
     auto x = BigInteger(INT64_MIN);
     EXPECT_EQ(x.size(), 2);
-    EXPECT_EQ(x[1], 2147483648);
-    EXPECT_EQ(x[0], 0);
+    EXPECT_EQ(x[0], 2147483648);
+    EXPECT_EQ(x[1], 0);
     EXPECT_TRUE(x.get_sign());
 }
 
 TEST(big_integer_constructor_tests, int64max_constructor) {
     auto x = BigInteger(INT64_MAX);
     EXPECT_EQ(x.size(), 2);
-    EXPECT_EQ(x[1], 2147483647);
-    EXPECT_EQ(x[0], 4294967295);
+    EXPECT_EQ(x[0], 2147483647);
+    EXPECT_EQ(x[1], 4294967295);
     EXPECT_FALSE(x.get_sign());
 }
 

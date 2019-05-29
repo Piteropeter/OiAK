@@ -36,9 +36,9 @@ BigInteger::BigInteger(std::int64_t value) {
         }
         if(value > static_cast<std::int64_t>(INT32_MAX) || value < -static_cast<std::int64_t>(INT32_MAX)) {
             storage.resize(2);
-            storage[1] = value >> 32;
+            storage[0] = value >> 32;
         }
-        storage[0] = value << 32 >> 32;
+        storage[1] = value << 32 >> 32;
     }
 }
 
@@ -126,38 +126,27 @@ BigInteger& BigInteger::operator+(const BigInteger& b) {
 }
 
 BigInteger& BigInteger::operator-(const BigInteger& b) {
-    std::int64_t tmp = 0;
-    bool borrow_bit = false;
-
-    if(storage.size() < b.storage.size())
-        storage.resize(b.storage.size());
-
-    if(!this->sign && !b.sign) {
-        for(auto i = 0u; i < storage.size(); i++) {
-            if(i < b.storage.size())
-                tmp = static_cast<std::int64_t>(storage[i]) - static_cast<std::int64_t>(b.storage[i]);
-            else
-                tmp = static_cast<std::int64_t>(storage[i]);
-
-            if(borrow_bit) {
-                tmp--;
-                borrow_bit = false;
-            }
-
-            if(tmp < 0) {
-                storage[i] = (static_cast<std::int64_t>(UINT32_MAX) + tmp) >> 32;
-                borrow_bit = true;
-            } else
-                storage[i] = static_cast<std::uint32_t>(tmp);
-        }
-        if(borrow_bit && tmp < 0) {
-            storage.resize(storage.size() + 1);
-            storage[storage.size() - 1] = 1;
-            sign = true;
-        }
+    if(b.sign != sign) {
+        add(b.storage);
+        return *this;
     }
 
-    return *this;
+	int cmp = compareStorage(b.storage);
+    if(cmp == 0)
+        storage.clear();
+
+	if(cmp > 0) {
+        subtract(b.storage);
+        sign = false;
+        return *this;
+	} else {
+        auto tmp = storage;
+        storage = b.storage;
+        subtract(tmp);
+
+		sign = true;
+        return *this;
+	}
 }
 
 BigInteger& BigInteger::operator*(const BigInteger& b) {
