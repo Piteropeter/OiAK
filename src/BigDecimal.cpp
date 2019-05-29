@@ -14,7 +14,7 @@ BigDecimal::BigDecimal(BigInteger significand, BigInteger exponent, bool sign) {
 BigDecimal::BigDecimal(double value) {
     static_assert(sizeof(double) == 8, "Double is not 8 bytes!");
 
-    if(std::isinf<double>(value) || std::isnan<double>(value))
+    if(std::isinf(value) || std::isnan(value))
         throw std::runtime_error("Double infinite or NaN!\n");
 
     std::uint8_t* bytes_array = reinterpret_cast<std::uint8_t*>(&value);
