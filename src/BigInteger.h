@@ -41,9 +41,13 @@ public:
     bool get_sign() const;
     std::size_t size() const;
 
-    std::string to_string();
+    std::string to_string(std::uint8_t base);
     int compareStorage(const BigInteger&);
-    void add(std::vector<std::uint32_t>);
+
+private:
+    void add(std::vector < std::uint32_t>);
+	// Storage must be greater than subtracted parameter s2
+    void subtract(std::vector < std::uint32_t> s2);
 };
 
 
