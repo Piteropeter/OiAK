@@ -36,9 +36,9 @@ BigInteger::BigInteger(std::int64_t value) {
         }
         if(value > static_cast<std::int64_t>(INT32_MAX) || value < -static_cast<std::int64_t>(INT32_MAX)) {
             storage.resize(2);
-            storage[0] = value >> 32;
+            storage[1] = value >> 32;
         }
-        storage[1] = value << 32 >> 32;
+        storage[0] = value << 32 >> 32;
     }
 }
 
@@ -313,6 +313,7 @@ int BigInteger::compareStorage(const BigInteger& other) {
 
 void BigInteger::add(std::vector<std::uint32_t> s2) {
     std::uint64_t tmp = 0;
+    auto tmpArr = std::vector<std::uint32_t>(storage.size());
     bool carry_bit = false;
 
     if(storage.size() < s2.size())
@@ -331,8 +332,10 @@ void BigInteger::add(std::vector<std::uint32_t> s2) {
 
         if(tmp > UINT32_MAX) {
             storage[i] = tmp << 32 >> 32;
-            if(i + 1 == storage.size())
+            if(i + 1 == storage.size()) {
                 storage.resize(storage.size() + 1);
+            }
+               
             carry_bit = true;
 
         } else
@@ -345,10 +348,10 @@ void BigInteger::subtract(std::vector<std::uint32_t> s2) {
     std::uint64_t s1Index = storage.size();
     std::uint64_t s2Index = s2.size();
     std::vector<std::uint32_t> tmp = std::vector<std::uint32_t>(s1Index);
-	std::int32_t diff = 0;
+    std::int32_t diff = 0;
     std::int32_t borrow = 0;
-	//Subtract common parts
-	while(s2Index > 0) {
+    // Subtract common parts
+    while(s2Index > 0) {
         if(diff < 0)
             borrow = 1;
         else
@@ -356,13 +359,12 @@ void BigInteger::subtract(std::vector<std::uint32_t> s2) {
 
         diff = storage[--s1Index] - s2[--s2Index] - borrow;
         tmp[s1Index] = diff;
-	}
+    }
 
-	auto i = tmp.size();
+    auto i = tmp.size();
     auto j = 0;
-    for(j; j < tmp.size(); j++)
-	{
-        storage[j] = static_cast<std::uint32_t>(tmp[--i]);
+    for(j; j < tmp.size(); j++) {
+        storage[j] = static_cast<std::uint32_t>(tmp[j]);
     }
 }
 } // namespace oiak
