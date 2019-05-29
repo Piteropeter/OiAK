@@ -241,22 +241,10 @@ std::size_t BigInteger::size() const {
 //    return str;
 //}
 
-std::string BigInteger::to_string(std::uint8_t base) {
-    if(base != 16) {
-        if(base == 10 && storage.size() == 1) {
-            std::stringstream ss;
-            if(sign)
-                ss << '-';
-            ss << storage[0];
-            return ss.str();
-        } else
-            throw std::runtime_error("Unsupported to_string base!");
-    }
-
+std::string BigInteger::to_string() {
     std::stringstream ss;
     if(sign)
         ss << '-';
-    ss << "0x";
 
     for(auto it = storage.crbegin(); it != storage.crend(); it++) {
         if(it == storage.crbegin()) {
