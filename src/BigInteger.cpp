@@ -4,16 +4,15 @@ namespace oiak {
 
 // CONSTRUCTORS
 
-	void BigInteger::normalize()
-	{
-			if(storage.back() == 0) {
-				auto it = storage.begin() + storage.size() - 1;
-				while(*it == 0 && it != storage.end()) {
-					storage.erase(it);
-					it = storage.begin() + storage.size() - 1;
-				}
-			}
-	}
+void BigInteger::normalize() {
+    if(storage.back() == 0) {
+        auto it = storage.begin() + storage.size() - 1;
+        while(*it == 0 && it != storage.end()) {
+            storage.erase(it);
+            it = storage.begin() + storage.size() - 1;
+        }
+    }
+}
 
 BigInteger::BigInteger(std::int32_t value) {
     if(value < 0) {
@@ -103,18 +102,27 @@ BigInteger& BigInteger::operator=(const BigInteger& b) {
 BigInteger& BigInteger::operator+(const BigInteger& b) {
     if(!sign && !b.sign) {
         add(b.storage);
+        return *this;
     }
 
-	// Zero! Mo¿e zmiana reprezentacji znaku dla ³atwiejszej obs³ugi?
-	int cmp = compareStorage(b);
+    // Zero! Mo¿e zmiana reprezentacji znaku dla ³atwiejszej obs³ugi?
+    int cmp = compareStorage(b);
     if(cmp == 0) {
         storage.clear();
-	}
+        return *this;
+    }
 
-	if(cmp > 0) {
-		
-	}
-	return *this;
+    if(cmp > 0) {
+        subtract(b.storage);
+        sign = false;
+    } else {
+        auto tmp = storage;
+        storage = b.storage;
+        subtract(tmp);
+        sign = true;
+    }
+
+    return *this;
 }
 
 BigInteger& BigInteger::operator-(const BigInteger& b) {
@@ -175,34 +183,26 @@ BigInteger& BigInteger::operator*(const BigInteger& b) {
     else
         sign = false;
 
-	normalize();
+    normalize();
     return *this;
 }
 
 BigInteger& BigInteger::operator/(const BigInteger& b) {
-	BigInteger tmp;
+    BigInteger tmp;
 
-	if(*this < b)
-		*this = tmp;
-	else {
-		//auto rbegin = b.storage.rbegin();
-		//auto rend = b.storage.rbegin() + b.size;
-		//tmp = BigInteger(rbegin, rend);
+    if(*this < b)
+        *this = tmp;
+    else {
+        // auto rbegin = b.storage.rbegin();
+        // auto rend = b.storage.rbegin() + b.size;
+        // tmp = BigInteger(rbegin, rend);
 
-
-
-
-
-
-
-
-
-		if(sign && !b.sign || !sign && b.sign)
-			sign = true;
-		else
-			sign = false;
-	}
-	return *this;
+        if(sign && !b.sign || !sign && b.sign)
+            sign = true;
+        else
+            sign = false;
+    }
+    return *this;
 }
 
 bool BigInteger::operator<(const BigInteger& b) const {
@@ -252,10 +252,22 @@ std::size_t BigInteger::size() const {
 //    return str;
 //}
 
-std::string BigInteger::to_string() {
+std::string BigInteger::to_string(std::uint8_t base) {
+    if(base != 16) {
+        if(base == 10 && storage.size() == 1) {
+            std::stringstream ss;
+            if(sign)
+                ss << '-';
+            ss << storage[0];
+            return ss.str();
+        } else
+            throw std::runtime_error("Unsupported to_string base!");
+    }
+
     std::stringstream ss;
     if(sign)
         ss << '-';
+    ss << "0x";
 
     for(auto it = storage.crbegin(); it != storage.crend(); it++) {
         if(it == storage.crbegin()) {
@@ -291,23 +303,23 @@ int BigInteger::compareStorage(const BigInteger& other) {
     auto s2 = other.storage;
     int len2 = s2.size();
 
-	if(len1 < len2)
+    if(len1 < len2)
         return -1;
     if(len1 > len2)
         return 1;
 
-	for(auto i = 0; i < len1; i++) {
-        int x = s1[i];
-        int y = s2[i];
+    for(auto i = 0; i < len1; i++) {
+        uint32_t x = s1[i];
+        uint32_t y = s2[i];
 
-		if(x != y) {
+        if(x != y) {
             if(x < y)
                 return -1;
             else
                 return 1;
-		}
-        return 0;
-	}
+        }
+    }
+    return 0;
 }
 
 void BigInteger::add(std::vector<std::uint32_t> s2) {
@@ -336,6 +348,32 @@ void BigInteger::add(std::vector<std::uint32_t> s2) {
 
         } else
             storage[i] = static_cast<std::uint32_t>(tmp);
+    }
+}
+
+// Assumes s2 smaller than this.storage
+void BigInteger::subtract(std::vector<std::uint32_t> s2) {
+    std::uint64_t s1Index = storage.size();
+    std::uint64_t s2Index = s2.size();
+    std::vector<std::uint32_t> tmp = std::vector<std::uint32_t>(s1Index);
+	std::int32_t diff = 0;
+    std::int32_t borrow = 0;
+	//Subtract common parts
+	while(s2Index > 0) {
+        if(diff < 0)
+            borrow = 1;
+        else
+            borrow = 0;
+
+        diff = storage[--s1Index] - s2[--s2Index] - borrow;
+        tmp[s1Index] = diff;
+	}
+
+	auto i = tmp.size();
+    auto j = 0;
+    for(j; j < tmp.size(); j++)
+	{
+        storage[j] = static_cast<std::uint32_t>(tmp[--i]);
     }
 }
 } // namespace oiak

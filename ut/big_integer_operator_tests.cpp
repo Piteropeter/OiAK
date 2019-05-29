@@ -55,6 +55,53 @@ TEST(big_integer_operator_tests, sum_of_two_integers_right_bigger) {
     EXPECT_FALSE(x.get_sign());
 }
 
+TEST(big_integer_operator_tests, sum_of_positive_and_negative) {
+    auto x = BigInteger(123);
+    auto y = BigInteger(-123);
+    x = x + y;
+    EXPECT_EQ(x.size(), 0);
+}
+
+TEST(big_integer_operator_tests, sum_of_positive_and_negative_smaller) {
+    auto x = BigInteger(123);
+    auto y = BigInteger(-100);
+    x = x + y;
+    EXPECT_EQ(x[0], 23);
+}
+
+TEST(big_integer_operator_tests, sum_of_positive_and_negative_bigger) {
+    auto x = BigInteger(100);
+    auto y = BigInteger(-123);
+    x = x + y;
+    EXPECT_EQ(x[0], 23);
+    EXPECT_TRUE(x.get_sign());
+}
+
+TEST(big_integer_operator_tests, sum_of_big_same_positive_and_negative) {
+    auto x = BigInteger(0xfffffffffffffff);
+    auto y = BigInteger(-0xfffffffffffffff);
+    x = x + y;
+    EXPECT_EQ(x.size(), 0);
+}
+
+TEST(big_integer_operator_tests, sum_of_big_positive_and_negative_smaller) {
+    auto x = BigInteger(0xfffffffffffffff);
+    auto y = BigInteger(-0xffffffffffffff);
+    x = x + y;
+    EXPECT_EQ(x[0], 251658240);
+    EXPECT_EQ(x[1], 0);
+    EXPECT_FALSE(x.get_sign());
+}
+
+TEST(big_integer_operator_tests, sum_of_big_positive_and_negative_bigger) {
+    auto x = BigInteger(0xffffffffffffff);
+    auto y = BigInteger(-0xfffffffffffffff);
+    x = x + y;
+    EXPECT_EQ(x[0], 251658240);
+    EXPECT_EQ(x[1], 0);
+    EXPECT_TRUE(x.get_sign());
+}
+
 TEST(big_integer_operator_tests, subtraction_of_two_32bit_integers_result_positive) {
     auto x = BigInteger(0x22222222);
     auto y = BigInteger(0x11111111);
