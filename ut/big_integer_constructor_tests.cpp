@@ -106,7 +106,6 @@ TEST(big_integer_constructor_tests, uint32_default_constructor) {
     EXPECT_FALSE(x.get_sign());
 }
 
-//TODO
 TEST(big_integer_constructor_tests, int64min_constructor) {
     auto x = BigInteger(INT64_MIN);
     EXPECT_EQ(x.size(), 2);
