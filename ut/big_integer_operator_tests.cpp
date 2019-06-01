@@ -185,7 +185,7 @@ TEST(big_integer_operator_tests, subtraction_ultimate_and_small) {
     auto y = BigInteger("f");
     auto z = x - y;
 
-    EXPECT_EQ(z.to_string(), "123456789abcdef0fedcba9876541b");
+    EXPECT_EQ(z.to_string(), "123456789abcdef0fedcba987654312");
 }
 
 /// MULTIPLYING

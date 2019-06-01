@@ -106,7 +106,7 @@ BigInteger& BigInteger::operator+(const BigInteger& b) {
     }
 
     // Zero! Mo¿e zmiana reprezentacji znaku dla ³atwiejszej obs³ugi?
-    int cmp = compareStorage(b);
+    int cmp = compareStorage(storage, b.storage);
     if(cmp == 0) {
         storage.clear();
         return *this;
@@ -129,7 +129,7 @@ BigInteger& BigInteger::operator-(const BigInteger& b) {
         return *this;
     }
 
-	int cmp = compareStorage(b.storage);
+	int cmp = compareStorage(storage, b.storage);
     if(cmp == 0)
         storage.clear();
 
@@ -269,20 +269,19 @@ std::string BigInteger::to_string() {
 }
 
 // Helper methods
-int BigInteger::compareStorage(const BigInteger& other) {
-    auto s1 = storage;
-    int len1 = s1.size();
-    auto s2 = other.storage;
-    int len2 = s2.size();
+int BigInteger::compareStorage(std::vector<std::uint32_t> s1, std::vector<std::uint32_t> s2) {
+    auto len1 = s1.size();
+    auto len2 = s2.size();
 
-    if(len1 < len2)
+	if(len1 < len2) 
         return -1;
     if(len1 > len2)
         return 1;
+    int i = (len1 - 1);
 
-    for(auto i = 0; i < len1; i++) {
+	while(i>=0) {
         uint32_t x = s1[i];
-        uint32_t y = s2[i];
+        uint32_t y = s2[i--];
 
         if(x != y) {
             if(x < y)
@@ -330,24 +329,39 @@ std::vector<std::uint32_t> BigInteger::add(std::vector<std::uint32_t> s1, std::v
 }
 // Assumes s2 smaller than this.storage
 std::vector<std::uint32_t> BigInteger::subtract(std::vector<std::uint32_t> s1, std::vector<std::uint32_t> s2) {
-    std::uint64_t s1Index = s1.size();
-    std::uint64_t s2Index = s2.size();
-    std::vector<std::uint32_t> tmp = std::vector<std::uint32_t>(s1);
-   
-	std::int32_t diff = 0;
-    std::int32_t borrow = 0;
-    // Subtract common parts
-    auto i = 0;
-    while(i < s2Index) {
-        if(diff < 0)
-            borrow = 1;
-        else
-            borrow = 0;
+	 std::int64_t tmp = 0;
+	 bool borrow_bit = false;
 
-        diff = s1[i] - s2[i] - borrow;
-        tmp[i++] = diff;
-    }
+	 auto result = std::vector<std::uint32_t>(s1);
 
-	return tmp;
-}
+	 auto s1Size = s1.size();
+     auto s2Size = s2.size();
+
+     for(auto i = 0u; i < s1Size; i++) {
+         if(i < s2Size)
+             tmp = static_cast<std::int64_t>(s1[i]) - static_cast<std::int64_t>(s2[i]);
+         else
+             tmp = static_cast<std::int64_t>(s1[i]);
+
+         if(borrow_bit) {
+             tmp--;
+             borrow_bit = false;
+         }
+
+         if(tmp < 0) {
+             result[i] = (static_cast<std::int64_t>(UINT32_MAX) + tmp) >> 32;
+             borrow_bit = true;
+         } else
+             result[i] = static_cast<std::uint32_t>(tmp);
+     }
+     if(borrow_bit && tmp < 0) {
+         result.resize(result.size() + 1);
+         result[result.size() - 1] = 1;
+         sign = true;
+     }
+     return result;
+ }
+
+
+
 } // namespace oiak
