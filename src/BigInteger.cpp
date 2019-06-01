@@ -101,7 +101,7 @@ BigInteger& BigInteger::operator=(const BigInteger& b) {
 
 BigInteger& BigInteger::operator+(const BigInteger& b) {
     if(!sign && !b.sign) {
-        add(b.storage);
+        storage = add(storage, b.storage);
         return *this;
     }
 
@@ -113,12 +113,10 @@ BigInteger& BigInteger::operator+(const BigInteger& b) {
     }
 
     if(cmp > 0) {
-        subtract(b.storage);
+        storage = subtract(storage, b.storage);
         sign = false;
     } else {
-        auto tmp = storage;
-        storage = b.storage;
-        subtract(tmp);
+        storage = subtract(b.storage, storage);
         sign = true;
     }
 
@@ -127,7 +125,7 @@ BigInteger& BigInteger::operator+(const BigInteger& b) {
 
 BigInteger& BigInteger::operator-(const BigInteger& b) {
     if(b.sign != sign) {
-        add(b.storage);
+        storage = add(storage, b.storage);
         return *this;
     }
 
@@ -136,14 +134,11 @@ BigInteger& BigInteger::operator-(const BigInteger& b) {
         storage.clear();
 
 	if(cmp > 0) {
-        subtract(b.storage);
+        storage = subtract(storage, b.storage);
         sign = false;
         return *this;
 	} else {
-        auto tmp = storage;
-        storage = b.storage;
-        subtract(tmp);
-
+        storage = subtract(b.storage, storage);
 		sign = true;
         return *this;
 	}
@@ -298,20 +293,21 @@ int BigInteger::compareStorage(const BigInteger& other) {
     }
     return 0;
 }
-
-void BigInteger::add(std::vector<std::uint32_t> s2) {
-    std::uint64_t tmp = 0;
-    auto tmpArr = std::vector<std::uint32_t>(storage.size());
+std::vector<std::uint32_t> BigInteger::add(std::vector<std::uint32_t> s1, std::vector<std::uint32_t> s2) {
+	std::uint64_t tmp = 0;
     bool carry_bit = false;
 
-    if(storage.size() < s2.size())
-        storage.resize(s2.size());
+	auto result = std::vector<std::uint32_t>(s1);
 
-    for(auto i = 0u; i < storage.size(); i++) {
+	if(result.size() < s2.size())
+        result.resize(s2.size());
+	
+
+    for(auto i = 0u; i < result.size(); i++) {
         if(i < s2.size())
-            tmp = static_cast<std::uint64_t>(storage[i]) + static_cast<std::uint64_t>(s2[i]);
+            tmp = static_cast<std::uint64_t>(result[i]) + static_cast<std::uint64_t>(s2[i]);
         else
-            tmp = static_cast<std::uint64_t>(storage[i]);
+            tmp = static_cast<std::uint64_t>(result[i]);
 
         if(carry_bit) {
             tmp++;
@@ -319,40 +315,39 @@ void BigInteger::add(std::vector<std::uint32_t> s2) {
         }
 
         if(tmp > UINT32_MAX) {
-            storage[i] = tmp << 32 >> 32;
-            if(i + 1 == storage.size()) {
-                storage.resize(storage.size() + 1);
+            result[i] = tmp << 32 >> 32;
+            if(i + 1 == result.size()) {
+                result.resize(result.size() + 1);
             }
-               
+
             carry_bit = true;
 
         } else
-            storage[i] = static_cast<std::uint32_t>(tmp);
+            result[i] = static_cast<std::uint32_t>(tmp);
     }
-}
 
+	return result;
+}
 // Assumes s2 smaller than this.storage
-void BigInteger::subtract(std::vector<std::uint32_t> s2) {
-    std::uint64_t s1Index = storage.size();
+std::vector<std::uint32_t> BigInteger::subtract(std::vector<std::uint32_t> s1, std::vector<std::uint32_t> s2) {
+    std::uint64_t s1Index = s1.size();
     std::uint64_t s2Index = s2.size();
-    std::vector<std::uint32_t> tmp = std::vector<std::uint32_t>(s1Index);
-    std::int32_t diff = 0;
+    std::vector<std::uint32_t> tmp = std::vector<std::uint32_t>(s1);
+   
+	std::int32_t diff = 0;
     std::int32_t borrow = 0;
     // Subtract common parts
-    while(s2Index > 0) {
+    auto i = 0;
+    while(i < s2Index) {
         if(diff < 0)
             borrow = 1;
         else
             borrow = 0;
 
-        diff = storage[--s1Index] - s2[--s2Index] - borrow;
-        tmp[s1Index] = diff;
+        diff = s1[i] - s2[i] - borrow;
+        tmp[i++] = diff;
     }
 
-    auto i = tmp.size();
-    auto j = 0;
-    for(j; j < tmp.size(); j++) {
-        storage[j] = static_cast<std::uint32_t>(tmp[j]);
-    }
+	return tmp;
 }
 } // namespace oiak

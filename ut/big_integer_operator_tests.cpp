@@ -180,6 +180,14 @@ TEST(big_integer_operator_tests, ultimate_subtraction) {
     EXPECT_EQ(z.to_string(), "-edcba9876543210f0123456789abcde");
 }
 
+TEST(big_integer_operator_tests, subtraction_ultimate_and_small) {
+    auto x = BigInteger("123456789abcdef0fedcba987654321");
+    auto y = BigInteger("f");
+    auto z = x - y;
+
+    EXPECT_EQ(z.to_string(), "123456789abcdef0fedcba9876541b");
+}
+
 /// MULTIPLYING
 
 TEST(big_integer_operator_tests, multiplying_two_32bit_integers) {

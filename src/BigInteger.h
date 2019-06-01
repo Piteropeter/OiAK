@@ -45,9 +45,9 @@ public:
     int compareStorage(const BigInteger&);
 
 private:
-    void add(std::vector < std::uint32_t>);
+    std::vector<std::uint32_t> add(std::vector<std::uint32_t>, std::vector<std::uint32_t>);
 	// Storage must be greater than subtracted parameter s2
-    void subtract(std::vector < std::uint32_t> s2);
+    std::vector<std::uint32_t> subtract(std::vector<std::uint32_t> s1, std::vector<std::uint32_t> s2);
 };
 
 
