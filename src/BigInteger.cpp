@@ -4,16 +4,15 @@ namespace oiak {
 
 // CONSTRUCTORS
 
-	void BigInteger::normalize()
-	{
-			if(storage.back() == 0) {
-				auto it = storage.begin() + storage.size() - 1;
-				while(*it == 0 && it != storage.end()) {
-					storage.erase(it);
-					it = storage.begin() + storage.size() - 1;
-				}
-			}
-	}
+void BigInteger::normalize() {
+    if(storage.back() == 0) {
+        auto it = storage.begin() + storage.size() - 1;
+        while(*it == 0 && it != storage.end()) {
+            storage.erase(it);
+            it = storage.begin() + storage.size() - 1;
+        }
+    }
+}
 
 BigInteger::BigInteger(std::int32_t value) {
     if(value < 0) {
@@ -101,68 +100,48 @@ BigInteger& BigInteger::operator=(const BigInteger& b) {
 }
 
 BigInteger& BigInteger::operator+(const BigInteger& b) {
-    std::uint64_t tmp = 0;
-    bool carry_bit = false;
-
-    if(storage.size() < b.storage.size())
-        storage.resize(b.storage.size());
-
-    for(auto i = 0u; i < storage.size(); i++) {
-        if(i < b.storage.size())
-            tmp = static_cast<std::uint64_t>(storage[i]) + static_cast<std::uint64_t>(b.storage[i]);
-        else
-            tmp = static_cast<std::uint64_t>(storage[i]);
-
-        if(carry_bit) {
-            tmp++;
-            carry_bit = false;
-        }
-
-        if(tmp > UINT32_MAX) {
-            storage[i] = tmp << 32 >> 32;
-            if(i + 1 == storage.size())
-                storage.resize(storage.size() + 1);
-            carry_bit = true;
-
-        } else
-            storage[i] = static_cast<std::uint32_t>(tmp);
+    if(!sign && !b.sign) {
+        storage = add(storage, b.storage);
+        return *this;
     }
+
+    // Zero! Mo¿e zmiana reprezentacji znaku dla ³atwiejszej obs³ugi?
+    int cmp = compareStorage(storage, b.storage);
+    if(cmp == 0) {
+        storage.clear();
+        return *this;
+    }
+
+    if(cmp > 0) {
+        storage = subtract(storage, b.storage);
+        sign = false;
+    } else {
+        storage = subtract(b.storage, storage);
+        sign = true;
+    }
+
     return *this;
 }
 
 BigInteger& BigInteger::operator-(const BigInteger& b) {
-    std::int64_t tmp = 0;
-    bool borrow_bit = false;
-
-    if(storage.size() < b.storage.size())
-        storage.resize(b.storage.size());
-
-    if(!this->sign && !b.sign) {
-        for(auto i = 0u; i < storage.size(); i++) {
-            if(i < b.storage.size())
-                tmp = static_cast<std::int64_t>(storage[i]) - static_cast<std::int64_t>(b.storage[i]);
-            else
-                tmp = static_cast<std::int64_t>(storage[i]);
-
-            if(borrow_bit) {
-                tmp--;
-                borrow_bit = false;
-            }
-
-            if(tmp < 0) {
-                storage[i] = (static_cast<std::int64_t>(UINT32_MAX) + tmp) >> 32;
-                borrow_bit = true;
-            } else
-                storage[i] = static_cast<std::uint32_t>(tmp);
-        }
-        if(borrow_bit && tmp < 0) {
-            storage.resize(storage.size() + 1);
-            storage[storage.size() - 1] = 1;
-            sign = true;
-        }
+    if(b.sign != sign) {
+        storage = add(storage, b.storage);
+        return *this;
     }
 
-    return *this;
+	int cmp = compareStorage(storage, b.storage);
+    if(cmp == 0)
+        storage.clear();
+
+	if(cmp > 0) {
+        storage = subtract(storage, b.storage);
+        sign = false;
+        return *this;
+	} else {
+        storage = subtract(b.storage, storage);
+		sign = true;
+        return *this;
+	}
 }
 
 BigInteger& BigInteger::operator*(const BigInteger& b) {
@@ -188,34 +167,26 @@ BigInteger& BigInteger::operator*(const BigInteger& b) {
     else
         sign = false;
 
-	normalize();
+    normalize();
     return *this;
 }
 
 BigInteger& BigInteger::operator/(const BigInteger& b) {
-	BigInteger tmp;
+    BigInteger tmp;
 
-	if(*this < b)
-		*this = tmp;
-	else {
-		//auto rbegin = b.storage.rbegin();
-		//auto rend = b.storage.rbegin() + b.size;
-		//tmp = BigInteger(rbegin, rend);
+    if(*this < b)
+        *this = tmp;
+    else {
+        // auto rbegin = b.storage.rbegin();
+        // auto rend = b.storage.rbegin() + b.size;
+        // tmp = BigInteger(rbegin, rend);
 
-
-
-
-
-
-
-
-
-		if(sign && !b.sign || !sign && b.sign)
-			sign = true;
-		else
-			sign = false;
-	}
-	return *this;
+        if(sign && !b.sign || !sign && b.sign)
+            sign = true;
+        else
+            sign = false;
+    }
+    return *this;
 }
 
 bool BigInteger::operator<(const BigInteger& b) const {
@@ -296,4 +267,101 @@ std::string BigInteger::to_string() {
     }
     return ss.str();
 }
+
+// Helper methods
+int BigInteger::compareStorage(std::vector<std::uint32_t> s1, std::vector<std::uint32_t> s2) {
+    auto len1 = s1.size();
+    auto len2 = s2.size();
+
+	if(len1 < len2) 
+        return -1;
+    if(len1 > len2)
+        return 1;
+    int i = (len1 - 1);
+
+	while(i>=0) {
+        uint32_t x = s1[i];
+        uint32_t y = s2[i--];
+
+        if(x != y) {
+            if(x < y)
+                return -1;
+            else
+                return 1;
+        }
+    }
+    return 0;
+}
+std::vector<std::uint32_t> BigInteger::add(std::vector<std::uint32_t> s1, std::vector<std::uint32_t> s2) {
+	std::uint64_t tmp = 0;
+    bool carry_bit = false;
+
+	auto result = std::vector<std::uint32_t>(s1);
+
+	if(result.size() < s2.size())
+        result.resize(s2.size());
+	
+
+    for(auto i = 0u; i < result.size(); i++) {
+        if(i < s2.size())
+            tmp = static_cast<std::uint64_t>(result[i]) + static_cast<std::uint64_t>(s2[i]);
+        else
+            tmp = static_cast<std::uint64_t>(result[i]);
+
+        if(carry_bit) {
+            tmp++;
+            carry_bit = false;
+        }
+
+        if(tmp > UINT32_MAX) {
+            result[i] = tmp << 32 >> 32;
+            if(i + 1 == result.size()) {
+                result.resize(result.size() + 1);
+            }
+
+            carry_bit = true;
+
+        } else
+            result[i] = static_cast<std::uint32_t>(tmp);
+    }
+
+	return result;
+}
+// Assumes s2 smaller than this.storage
+std::vector<std::uint32_t> BigInteger::subtract(std::vector<std::uint32_t> s1, std::vector<std::uint32_t> s2) {
+	 std::int64_t tmp = 0;
+	 bool borrow_bit = false;
+
+	 auto result = std::vector<std::uint32_t>(s1);
+
+	 auto s1Size = s1.size();
+     auto s2Size = s2.size();
+
+     for(auto i = 0u; i < s1Size; i++) {
+         if(i < s2Size)
+             tmp = static_cast<std::int64_t>(s1[i]) - static_cast<std::int64_t>(s2[i]);
+         else
+             tmp = static_cast<std::int64_t>(s1[i]);
+
+         if(borrow_bit) {
+             tmp--;
+             borrow_bit = false;
+         }
+
+         if(tmp < 0) {
+             result[i] = (static_cast<std::int64_t>(UINT32_MAX) + tmp) >> 32;
+             borrow_bit = true;
+         } else
+             result[i] = static_cast<std::uint32_t>(tmp);
+     }
+     if(borrow_bit && tmp < 0) {
+         result.resize(result.size() + 1);
+         result[result.size() - 1] = 1;
+         sign = true;
+     }
+     return result;
+ }
+
+
+
 } // namespace oiak

@@ -40,7 +40,14 @@ public:
 	void set_sign(bool);
     bool get_sign() const;
     std::size_t size() const;
+
     std::string to_string();
+private:
+    int BigInteger::compareStorage(std::vector<std::uint32_t> s1, std::vector<std::uint32_t> s2);
+    std::vector<std::uint32_t> add(std::vector<std::uint32_t>, std::vector<std::uint32_t>);
+	// Storage must be greater than subtracted parameter s2
+    std::vector<std::uint32_t> subtract(std::vector<std::uint32_t> s1, std::vector<std::uint32_t> s2);
 };
+
 
 } // namespace oiak
