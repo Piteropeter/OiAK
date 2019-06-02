@@ -1,3 +1,5 @@
+#define max(x, y) ((x) > (y) ? (x) : (y))
+
 #include "BigInteger.h"
 
 namespace oiak {
@@ -172,21 +174,21 @@ BigInteger& BigInteger::operator*(const BigInteger& b) {
 }
 
 BigInteger& BigInteger::operator/(const BigInteger& b) {
-    BigInteger tmp;
+    int m = storage.size();
+    int n = b.storage.size();
 
-    if(*this < b)
-        *this = tmp;
-    else {
-        // auto rbegin = b.storage.rbegin();
-        // auto rend = b.storage.rbegin() + b.size;
-        // tmp = BigInteger(rbegin, rend);
+	auto quotient = std::vector<std::uint32_t>(m - n + 1);
+    auto r = std::vector<std::uint32_t>(n);
+    
+    if(divmnu(quotient, r, storage, b.storage)) {
+        // TODO EXCEPTION THROW
+        return *this;
+	}
+    
+    storage = quotient;
+    sign = (sign || b.sign) && !(sign && b.sign);
 
-        if(sign && !b.sign || !sign && b.sign)
-            sign = true;
-        else
-            sign = false;
-    }
-    return *this;
+	return *this;
 }
 
 bool BigInteger::operator<(const BigInteger& b) const {
@@ -362,6 +364,149 @@ std::vector<std::uint32_t> BigInteger::subtract(std::vector<std::uint32_t> s1, s
      return result;
  }
 
+std::uint8_t BigInteger::nlz(std::uint32_t x) {
+     int n;
 
+     if(x == 0)
+         return (32);
+     n = 0;
+     if(x <= 0x0000FFFF) {
+         n = n + 16;
+         x = x << 16;
+     }
+     if(x <= 0x00FFFFFF) {
+         n = n + 8;
+         x = x << 8;
+     }
+     if(x <= 0x0FFFFFFF) {
+         n = n + 4;
+         x = x << 4;
+     }
+     if(x <= 0x3FFFFFFF) {
+         n = n + 2;
+         x = x << 2;
+     }
+     if(x <= 0x7FFFFFFF) {
+         n = n + 1;
+     }
+     return n;
+ }
+
+ /* q[0], r[0], u[0], and v[0] contain the LEAST significant words.
+ (The sequence is in little-endian order).
+
+ This is a fairly precise implementation of Knuth's Algorithm D, for a
+ binary computer with base b = 2**32. The caller supplies:
+    1. Space q for the quotient, m - n + 1 words (at least one).
+    2. Space r for the remainder (optional), n words.
+    3. The dividend u, m words, m >= 1.
+    4. The divisor v, n words, <probably wrong> --> n >= 2.
+ The most significant digit of the divisor, v[n-1], must be nonzero.  The
+ dividend u may have leading zeros; this just makes the algorithm take
+ longer and makes the quotient contain more leading zeros.  A value of
+ NULL may be given for the address of the remainder to signify that the
+ caller does not want the remainder.
+    The program does not alter the input parameters u and v.
+    The quotient and remainder returned may have leading zeros.  The
+ function itself returns a value of 0 for success and 1 for invalid
+ parameters (e.g., division by 0).
+    For now, we must have m >= n.  Knuth's Algorithm D also requires
+ that the dividend be at least as long as the divisor.  (In his terms,
+ m >= 0 (unstated).  Therefore m+n >= n.) */
+
+ bool BigInteger::divmnu(
+	 std::vector<std::uint32_t> &quotient, 
+	 std::vector<std::uint32_t> &remainder,
+	 const std::vector<std::uint32_t> divident, 
+	 const std::vector<std::uint32_t> divisor
+	 ) {
+
+	 std::size_t dividentLen = divident.size();
+     std::size_t divisorLen = divisor.size();
+
+     const std::uint64_t b = 4294967296; // Number base (2**32).
+     auto normalDividend = std::vector<std::uint32_t>(dividentLen + 1); // Normalized dividend
+     auto normalDivisor = std::vector<std::uint32_t>(divisorLen);		// Normalized divisor.
+     std::uint64_t quotDigit;                   // Estimated quotient digit.
+     std::uint64_t remainderDigit;              // A remainder.
+     std::uint64_t prodTwoDigits;               // Product of two digits.
+     std::int64_t t, k;
+     std::int32_t divisorShift, i, j;
+
+     if(dividentLen < divisorLen || divisorLen <= 0 || divisor[divisorLen - 1] == 0)
+         return 1; // Return if invalid param.
+
+     if(divisorLen == 1) {                          // Take care of
+         k = 0;                                     // the case of a
+         for(j = dividentLen - 1; j >= 0; j--) {     // single-digit
+             quotient[j] = (k * b + divident[j]) / divisor[0]; // divisor here.
+             k = (k * b + divident[j]) - quotient[j] * divisor[0];
+         }
+         if(&remainder != NULL)
+             remainder[0] = k;
+         return 0;
+     }
+
+     /* Normalize by shifting dividend left just enough so that its high-order
+     bit is on, and shift divident left the same amount. We may have to append a
+     high-order digit on the dividend; we do that unconditionally. */
+
+     divisorShift = nlz(divisor[divisorLen - 1]); // 0 <= s <= 31.
+
+     for(i = divisorLen - 1; i > 0; i--)
+         normalDivisor[i] = (divisor[i] << divisorShift) | (static_cast<std::uint64_t>(divisor[i - 1]) >> (32 - divisorShift));
+     normalDivisor[0] = divisor[0] << divisorShift;
+
+     normalDividend[dividentLen] = static_cast<std::uint64_t>(divident[dividentLen - 1]) >> (32 - divisorShift);
+     for(i = dividentLen - 1; i > 0; i--)
+         normalDividend[i] = (divident[i] << divisorShift) | (static_cast<std::uint64_t>(divident[i - 1]) >> (32 - divisorShift));
+     normalDividend[0] = divident[0] << divisorShift;
+
+     for(j = dividentLen - divisorLen; j >= 0; j--) { // Main loop.
+         // Compute estimate quotientDigit of q[j].
+         quotDigit = (normalDividend[j + divisorLen] * b + normalDividend[j + divisorLen - 1]) / normalDivisor[divisorLen - 1];
+         remainderDigit = (normalDividend[j + divisorLen] * b + normalDividend[j + divisorLen - 1]) - quotDigit * normalDivisor[divisorLen - 1];
+    
+	 // TODO this GOTO Bleh
+	 again:
+         if(quotDigit >= b || quotDigit * normalDivisor[divisorLen - 2] > b * remainderDigit + normalDividend[j + divisorLen - 2]) {
+             quotDigit = quotDigit - 1;
+             remainderDigit = remainderDigit + normalDivisor[divisorLen - 1];
+             if(remainderDigit < b)
+                 goto again;
+         }
+
+         // Multiply and subtract.
+         k = 0;
+         for(i = 0; i < divisorLen; i++) {
+             prodTwoDigits = quotDigit * normalDivisor[i];
+             t = normalDividend[i + j] - k - (prodTwoDigits & 0xFFFFFFFF);
+             normalDividend[i + j] = t;
+             k = (prodTwoDigits >> 32) - (t >> 32);
+         }
+         t = normalDividend[j + divisorLen] - k;
+         normalDividend[j + divisorLen] = t;
+
+         quotient[j] = quotDigit;         // Store quotient digit.
+         if(t < 0) {					  // If we subtracted too
+             quotient[j] = quotient[j] - 1; // much, add back.
+             k = 0;
+             for(i = 0; i < divisorLen; i++) {
+                 t = static_cast<std::uint64_t>(normalDividend[i + j]) + normalDivisor[i] + k;
+                 normalDividend[i + j] = t;
+                 k = t >> 32;
+             }
+             normalDividend[j + divisorLen] = normalDividend[j + divisorLen] + k;
+         }
+     } // End j.
+     // If the caller wants the remainder, unnormalize
+     // it and pass it back.
+     if(&remainder != NULL) {
+         for(i = 0; i < divisorLen - 1; i++)
+             remainder[i] = (normalDividend[i] >> divisorShift) | (static_cast<std::uint64_t>(normalDividend[i + 1]) << (32 - divisorShift));
+         remainder[divisorLen - 1] = normalDividend[divisorLen - 1] >> divisorShift;
+     }
+     return 0;
+ }
 
 } // namespace oiak
