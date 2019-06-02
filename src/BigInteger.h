@@ -47,6 +47,9 @@ private:
     std::vector<std::uint32_t> add(std::vector<std::uint32_t>, std::vector<std::uint32_t>);
 	// Storage must be greater than subtracted parameter s2
     std::vector<std::uint32_t> subtract(std::vector<std::uint32_t> s1, std::vector<std::uint32_t> s2);
+    std::uint8_t nlz(std::uint32_t x);
+    bool divmnu(std::vector<std::uint32_t> &q, std::vector<std::uint32_t> &r, const std::vector<std::uint32_t> u,
+           const std::vector<std::uint32_t> v);
 };
 
 
