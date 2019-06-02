@@ -11,6 +11,7 @@ class BigInteger {
     bool sign = false;
     std::vector<std::uint32_t> storage = std::vector<std::uint32_t>(1, 0);
 	void normalize();
+    void normalize(std::vector<std::uint32_t>&);
 
 public:
     BigInteger() = default;

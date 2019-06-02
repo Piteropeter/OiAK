@@ -16,6 +16,16 @@ void BigInteger::normalize() {
     }
 }
 
+void BigInteger::normalize(std::vector<std::uint32_t> &store) {
+    if(store.back() == 0) {
+        auto it = store.begin() + store.size() - 1;
+        while(*it == 0 && it != store.end()) {
+            store.erase(it);
+            it = store.begin() + store.size() - 1;
+        }
+    }
+}
+
 BigInteger::BigInteger(std::int32_t value) {
     if(value < 0) {
         sign = true;
@@ -128,22 +138,22 @@ BigInteger& BigInteger::operator+(const BigInteger& b) {
 BigInteger& BigInteger::operator-(const BigInteger& b) {
     if(b.sign != sign) {
         storage = add(storage, b.storage);
-        return *this;
-    }
+    } else {
+        int cmp = compareStorage(storage, b.storage);
+        if(cmp == 0)
+            storage.clear();
 
-	int cmp = compareStorage(storage, b.storage);
-    if(cmp == 0)
-        storage.clear();
-
-	if(cmp > 0) {
-        storage = subtract(storage, b.storage);
-        sign = false;
-        return *this;
-	} else {
-        storage = subtract(b.storage, storage);
-		sign = true;
-        return *this;
+        if(cmp > 0) {
+            storage = subtract(storage, b.storage);
+            sign = false;
+        } else {
+            storage = subtract(b.storage, storage);
+            sign = true;
+        }
 	}
+
+	normalize(storage);
+	return *this;
 }
 
 BigInteger& BigInteger::operator*(const BigInteger& b) {
