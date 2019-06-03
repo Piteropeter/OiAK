@@ -260,6 +260,54 @@ TEST(big_integer_operator_tests, ultimate_multiplying) {
 //	EXPECT_EQ(z.to_string(), "e");
 //}
 
+ TEST(big_integer_operator_tests, simple_division) {
+	auto x = BigInteger("ffffffffffffffffffffff");
+	auto y = BigInteger("222222222");
+	auto z = x / y;
+
+	EXPECT_EQ(z.to_string(), "78000000078000");
+}
+
+ TEST(big_integer_operator_tests, division_big_dividend_small_divisor) {
+    auto x = BigInteger("ffffffffffffffffffffff");
+    auto y = BigInteger("1");
+    auto z = x / y;
+
+    EXPECT_EQ(z.to_string(), "ffffffffffffffffffffff");
+}
+
+ TEST(big_integer_operator_tests, division_same_dividend_and_divisor) {
+    auto x = BigInteger("ffffffffffffffffffffff");
+    auto y = BigInteger("ffffffffffffffffffffff");
+    auto z = x / y;
+
+    EXPECT_EQ(z.to_string(), "1");
+}
+
+TEST(big_integer_operator_tests, division_negative_dividend_positive_divisor) {
+    auto x = BigInteger("-ffffffffffffffffffffff");
+    auto y = BigInteger("ffffffffffffffffffffff");
+    auto z = x / y;
+
+    EXPECT_EQ(z.to_string(), "-1");
+}
+
+TEST(big_integer_operator_tests, division_positive_dividend_negative_divisor) {
+    auto x = BigInteger("ffffffffffffffffffffff");
+    auto y = BigInteger("-ffffffffffffffffffffff");
+    auto z = x / y;
+
+    EXPECT_EQ(z.to_string(), "-1");
+}
+
+TEST(big_integer_operator_tests, division_negative_dividend_negative_divisor) {
+    auto x = BigInteger("-ffffffffffffffffffffff");
+    auto y = BigInteger("-ffffffffffffffffffffff");
+    auto z = x / y;
+
+    EXPECT_EQ(z.to_string(), "1");
+}
+
 /// OTHER OPERATORS
 
 TEST(big_integer_operator_tests, compare_operators_test1) {
