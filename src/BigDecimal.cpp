@@ -72,11 +72,21 @@ BigDecimal::BigDecimal(std::string str) {
         significand = BigInteger(str);
         exponent = BigInteger(0);
     }
+	while(!(significand[0] % 2)) {
+		significand = significand / BigInteger(2);
+		exponent = exponent + BigInteger(1);
+	}
     if(sign)
         significand.set_sign(true);
 }
 
 // OPERATORS
+
+BigDecimal& BigDecimal::operator=(const BigDecimal& b) {
+    significand = b.significand;
+    exponent = b.exponent;
+	return *this;
+}
 
 // OTHER FUNCTIONS
 
@@ -84,7 +94,44 @@ bool BigDecimal::get_sign() const {
     return significand.get_sign();
 }
 
-std::string BigDecimal::to_string(std::uint8_t base) {
+std::string BigDecimal::to_string() {
+	std::stringstream ss;
+	BigInteger significand = this->significand;
+
+	while(!(exponent[0] % 4))
+	{
+		significand = significand * BigInteger(2);
+		exponent = exponent - BigInteger(1);
+	}
+	std::string basic_string = significand.to_string();
+	//auto rbegin = basic_string.rbegin();
+	std::int64_t offset = 0;
+	
+	if(exponent < BigInteger(0)) {
+		while(!(exponent == BigInteger(0))) {
+			offset--;
+			exponent = exponent + BigInteger(4);
+		}
+
+
+
+	} else if(exponent > BigInteger(0)) {
+		while(!(exponent == BigInteger(0))) {
+			offset++;
+			exponent = exponent - BigInteger(4);
+		}
+
+
+
+	}
+	else {
+		ss << significand.to_string() << ".0";
+	}
+	
+	return ss.str();
+}
+
+std::string BigDecimal::to_science_notation() {
     std::stringstream ss;
     ss << significand.to_string() << " * 2 ^ " << exponent.to_string();
     return ss.str();

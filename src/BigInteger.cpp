@@ -9,7 +9,7 @@ namespace oiak {
 void BigInteger::normalize() {
     if(storage.back() == 0) {
         auto it = storage.begin() + storage.size() - 1;
-        while(*it == 0 && it != storage.end()) {
+        while(*it == 0 && it != storage.end() && storage.size() > 1) {
             storage.erase(it);
             it = storage.begin() + storage.size() - 1;
         }
@@ -227,6 +227,15 @@ bool BigInteger::operator>(const BigInteger& b) const {
     }
 }
 
+bool BigInteger::operator==(const BigInteger& b) const
+{
+	if(sign == b.sign && storage.size() == b.storage.size()) {
+		for(auto i = 0u; i < storage.size(); i++)
+			if(storage[i] != b.storage[i])
+				return false;
+		return true;
+	}}
+
 // OTHER FUNCTIONS
 
 void BigInteger::set_sign(bool value) {
@@ -241,12 +250,6 @@ bool BigInteger::get_sign() const {
 std::size_t BigInteger::size() const {
     return storage.size();
 }
-
-//std::string transform_to_decimal(const std::string& hex_string) {
-//    std::string str(hex_string.size() * 2, '0');
-//
-//    return str;
-//}
 
 std::string BigInteger::to_string() {
     std::stringstream ss;
@@ -424,31 +427,38 @@ std::uint8_t BigInteger::nlz(std::uint32_t x) {
  that the dividend be at least as long as the divisor.  (In his terms,
  m >= 0 (unstated).  Therefore m+n >= n.) */
 
- bool BigInteger::divmnu(
-	 std::vector<std::uint32_t> &quotient, 
-	 std::vector<std::uint32_t> &remainder,
-	 const std::vector<std::uint32_t> divident, 
-	 const std::vector<std::uint32_t> divisor
-	 ) {
+void NewFunction(uint64_t &quotDigit, const uint64_t &b, std::vector<uint32_t> &normalDivisor, const size_t &divisorLen, uint64_t &remainderDigit, std::vector<uint32_t> &normalDividend, const int32_t &j)
+{
+//again:
+	if(quotDigit >= b || quotDigit * normalDivisor[divisorLen - 2] > b * remainderDigit + normalDividend[j + divisorLen - 2]) {
+		quotDigit = quotDigit - 1;
+		remainderDigit = remainderDigit + normalDivisor[divisorLen - 1];
+		if(remainderDigit < b)
+			NewFunction(quotDigit, b, normalDivisor, divisorLen, remainderDigit, normalDividend, j);
+	}
+}
 
-	 std::size_t dividentLen = divident.size();
+bool BigInteger::divmnu(std::vector<std::uint32_t>& quotient, std::vector<std::uint32_t>& remainder,
+                         const std::vector<std::uint32_t> divident, const std::vector<std::uint32_t> divisor) {
+
+     std::size_t dividentLen = divident.size();
      std::size_t divisorLen = divisor.size();
 
-     const std::uint64_t b = 4294967296; // Number base (2**32).
+     constexpr std::uint64_t b = 4294967296;                                // Number base (2**32).
      auto normalDividend = std::vector<std::uint32_t>(dividentLen + 1); // Normalized dividend
-     auto normalDivisor = std::vector<std::uint32_t>(divisorLen);		// Normalized divisor.
-     std::uint64_t quotDigit;                   // Estimated quotient digit.
-     std::uint64_t remainderDigit;              // A remainder.
-     std::uint64_t prodTwoDigits;               // Product of two digits.
+     auto normalDivisor = std::vector<std::uint32_t>(divisorLen);       // Normalized divisor.
+     std::uint64_t quotDigit;                                           // Estimated quotient digit.
+     std::uint64_t remainderDigit;                                      // A remainder.
+     std::uint64_t prodTwoDigits;                                       // Product of two digits.
      std::int64_t t, k;
      std::int32_t divisorShift, i, j;
 
      if(dividentLen < divisorLen || divisorLen <= 0 || divisor[divisorLen - 1] == 0)
          return 1; // Return if invalid param.
 
-     if(divisorLen == 1) {                          // Take care of
-         k = 0;                                     // the case of a
-         for(j = dividentLen - 1; j >= 0; j--) {     // single-digit
+     if(divisorLen == 1) {                                     // Take care of
+         k = 0;                                                // the case of a
+         for(j = dividentLen - 1; j >= 0; j--) {               // single-digit
              quotient[j] = (k * b + divident[j]) / divisor[0]; // divisor here.
              k = (k * b + divident[j]) - quotient[j] * divisor[0];
          }
@@ -476,15 +486,8 @@ std::uint8_t BigInteger::nlz(std::uint32_t x) {
          // Compute estimate quotientDigit of q[j].
          quotDigit = (normalDividend[j + divisorLen] * b + normalDividend[j + divisorLen - 1]) / normalDivisor[divisorLen - 1];
          remainderDigit = (normalDividend[j + divisorLen] * b + normalDividend[j + divisorLen - 1]) - quotDigit * normalDivisor[divisorLen - 1];
-    
-	 // TODO this GOTO Bleh
-	 again:
-         if(quotDigit >= b || quotDigit * normalDivisor[divisorLen - 2] > b * remainderDigit + normalDividend[j + divisorLen - 2]) {
-             quotDigit = quotDigit - 1;
-             remainderDigit = remainderDigit + normalDivisor[divisorLen - 1];
-             if(remainderDigit < b)
-                 goto again;
-         }
+
+		 NewFunction(quotDigit, b, normalDivisor, divisorLen, remainderDigit, normalDividend, j);
 
          // Multiply and subtract.
          k = 0;
@@ -497,8 +500,8 @@ std::uint8_t BigInteger::nlz(std::uint32_t x) {
          t = normalDividend[j + divisorLen] - k;
          normalDividend[j + divisorLen] = t;
 
-         quotient[j] = quotDigit;         // Store quotient digit.
-         if(t < 0) {					  // If we subtracted too
+         quotient[j] = quotDigit;           // Store quotient digit.
+         if(t < 0) {                        // If we subtracted too
              quotient[j] = quotient[j] - 1; // much, add back.
              k = 0;
              for(i = 0; i < divisorLen; i++) {
@@ -519,4 +522,4 @@ std::uint8_t BigInteger::nlz(std::uint32_t x) {
      return 0;
  }
 
-} // namespace oiak
+ } // namespace oiak

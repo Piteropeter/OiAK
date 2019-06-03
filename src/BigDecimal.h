@@ -18,9 +18,15 @@ public:
 	BigDecimal(double value);
 	BigDecimal(std::string str);
 
+	BigDecimal& operator=(const BigDecimal&);
+	BigDecimal& operator+(const BigDecimal&);
+	BigDecimal& operator-(const BigDecimal&);
+	BigDecimal& operator*(const BigDecimal&);
+	BigDecimal& operator/(const BigDecimal&);
 
     bool get_sign() const;
-    std::string to_string(std::uint8_t = 16);
+    std::string to_string();
+    std::string to_science_notation();
 };
 
 } // namespace oiak

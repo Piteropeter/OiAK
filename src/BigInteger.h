@@ -36,7 +36,7 @@ public:
     bool operator>(const BigInteger&) const;
     // bool operator<=(const BigInteger&) const;
     // bool operator>=(const BigInteger&) const;
-    // bool operator==(const BigInteger&) const;
+    bool operator==(const BigInteger&) const;
 
 	void set_sign(bool);
     bool get_sign() const;
@@ -53,5 +53,7 @@ private:
            const std::vector<std::uint32_t> v);
 };
 
+
+void NewFunction(uint64_t &quotDigit, const uint64_t &b, std::vector<uint32_t> &normalDivisor, const size_t &divisorLen, uint64_t &remainderDigit, std::vector<uint32_t> &normalDividend, const int32_t &j);
 
 } // namespace oiak
