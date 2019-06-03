@@ -88,6 +88,80 @@ BigDecimal& BigDecimal::operator=(const BigDecimal& b) {
     return *this;
 }
 
+BigDecimal BigDecimal::operator+(const BigDecimal& b) {
+    BigDecimal new_decimal = *this;
+    BigDecimal temp;
+
+    if(new_decimal.exponent > b.exponent) {
+        while(new_decimal.exponent > b.exponent) {
+            new_decimal.significand = new_decimal.significand * BigInteger(2);
+            new_decimal.exponent = new_decimal.exponent - BigInteger(1);
+        }
+
+        new_decimal.significand = new_decimal.significand + b.significand;
+    } else if(new_decimal.exponent < b.exponent) {
+        temp = b;
+        while(new_decimal.exponent < temp.exponent) {
+            temp.significand = temp.significand * BigInteger(2);
+            temp.exponent = temp.exponent - BigInteger(1);
+        }
+
+        new_decimal.significand = new_decimal.significand + temp.significand;
+    } else {
+        new_decimal.significand = new_decimal.significand + b.significand;
+    }
+
+    normalize();
+    return new_decimal;
+}
+
+BigDecimal BigDecimal::operator-(const BigDecimal& b) {
+    BigDecimal new_decimal = *this;
+    BigDecimal temp;
+
+    if(new_decimal.exponent > b.exponent) {
+        while(new_decimal.exponent > b.exponent) {
+            new_decimal.significand = new_decimal.significand * BigInteger(2);
+            new_decimal.exponent = new_decimal.exponent - BigInteger(1);
+        }
+
+        new_decimal.significand = new_decimal.significand - b.significand;
+    } else if(new_decimal.exponent < b.exponent) {
+        temp = b;
+        while(new_decimal.exponent < temp.exponent) {
+            temp.significand = temp.significand * BigInteger(2);
+            temp.exponent = temp.exponent - BigInteger(1);
+        }
+
+        new_decimal.significand = new_decimal.significand - temp.significand;
+    } else {
+        new_decimal.significand = new_decimal.significand - b.significand;
+    }
+
+    normalize();
+    return new_decimal;
+}
+
+BigDecimal BigDecimal::operator*(const BigDecimal& b) {
+    BigDecimal new_decimal = *this;
+
+    new_decimal.significand = new_decimal.significand * b.significand;
+    new_decimal.exponent = new_decimal.exponent + b.exponent;
+
+    normalize();
+    return new_decimal;
+}
+
+BigDecimal BigDecimal::operator/(const BigDecimal& b) {
+    BigDecimal new_decimal = *this;
+
+    new_decimal.significand = new_decimal.significand / b.significand;
+    new_decimal.exponent = new_decimal.exponent - b.exponent;
+
+    normalize();
+    return new_decimal;
+}
+
 // OTHER FUNCTIONS
 
 bool BigDecimal::get_sign() const {
@@ -104,39 +178,36 @@ std::string BigDecimal::to_string() {
         exponent = exponent - BigInteger(1);
     }
     std::string basic_string = significand.to_string();
-    // auto rbegin = basic_string.rbegin();
     std::int64_t offset = 0;
 
     if(exponent < BigInteger(0)) {
         while(!(exponent == BigInteger(0))) {
-            offset--;
+            offset++;
             exponent = exponent + BigInteger(4);
         }
 
-        while(offset < 0) {
-            basic_string.push_back('0');
-			offset++;
-        }
-        ss << basic_string;
-
-    } else if(exponent > BigInteger(0)) {
-        while(!(exponent == BigInteger(0))) {
-            offset++;
-            exponent = exponent - BigInteger(4);
-        }
-
-        if(offset > basic_string.size()) {
+        if(offset >= basic_string.size()) {
             while(offset > basic_string.size()) {
                 basic_string.insert(basic_string.begin(), '0');
             }
             ss << "0." << basic_string;
         } else {
-            basic_string.insert(basic_string.begin() + offset, '.');
+            basic_string.insert(basic_string.begin() + (basic_string.size() - offset), '.');
             ss << basic_string;
         }
+    } else if(exponent > BigInteger(0)) {
+        while(!(exponent == BigInteger(0))) {
+            offset--;
+            exponent = exponent - BigInteger(4);
+        }
 
+        while(offset < 0) {
+            basic_string.push_back('0');
+            offset++;
+        }
+        ss << basic_string;
     } else {
-        ss << significand.to_string() << ".0";
+        ss << significand.to_string();
     }
 
     return ss.str();
@@ -147,4 +218,12 @@ std::string BigDecimal::to_science_notation() {
     ss << significand.to_string() << " * 2 ^ " << exponent.to_string();
     return ss.str();
 }
+
+void BigDecimal::normalize() {
+    while(!(significand[0] % 2)) {
+        significand = significand / BigInteger(2);
+        exponent = exponent + BigInteger(1);
+    }
+}
+
 } // namespace oiak

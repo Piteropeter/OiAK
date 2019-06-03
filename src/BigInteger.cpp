@@ -4,27 +4,17 @@
 
 namespace oiak {
 
+	void normalize(std::vector<std::uint32_t>& store) {
+		if(store.size() > 1 && store.back() == 0) {
+			auto it = store.begin() + store.size() - 1;
+			while(*it == 0 && it != store.end() && store.size() > 1) {
+				store.erase(it);
+				it = store.begin() + store.size() - 1;
+			}
+		}
+	}
+
 // CONSTRUCTORS
-
-void BigInteger::normalize() {
-    if(storage.size() >1 && storage.back() == 0) {
-        auto it = storage.begin() + storage.size() - 1;
-        while(*it == 0 && it != storage.end() && storage.size() > 1) {
-            storage.erase(it);
-            it = storage.begin() + storage.size() - 1;
-        }
-    }
-}
-
-void BigInteger::normalize(std::vector<std::uint32_t>& store) {
-    if(store.size() > 1 && store.back() == 0) {
-        auto it = store.begin() + store.size() - 1;
-        while(*it == 0 && it != store.end()) {
-            store.erase(it);
-            it = store.begin() + store.size() - 1;
-        }
-    }
-}
 
 BigInteger::BigInteger(std::int32_t value) {
     if(value < 0) {
@@ -111,56 +101,60 @@ BigInteger& BigInteger::operator=(const BigInteger& b) {
     return *this;
 }
 
-BigInteger& BigInteger::operator+(const BigInteger& b) {
+BigInteger BigInteger::operator+(const BigInteger& b) {
+    BigInteger new_integer = *this;
     if((!sign && !b.sign) || (sign && b.sign)) {
-        storage = add(storage, b.storage);
-        return *this;
+        new_integer.storage = add(new_integer.storage, b.storage);
+        return new_integer;
     }
 
     // Zero! Mo¿e zmiana reprezentacji znaku dla ³atwiejszej obs³ugi?
-    int cmp = compareStorage(storage, b.storage);
+    auto cmp = compareStorage(new_integer.storage, b.storage);
     if(cmp == 0) {
-        storage.clear();
-        sign = false;
+        new_integer.storage.clear();
+        new_integer.storage.push_back(0);
+        new_integer.sign = false;
     } else {
         if(cmp > 0) {
-            storage = subtract(storage, b.storage);
+            new_integer.storage = subtract(new_integer.storage, b.storage);
         } else {
-            storage = subtract(b.storage, storage);
-            sign = b.sign;
+            new_integer.storage = subtract(b.storage, new_integer.storage);
+            new_integer.sign = b.sign;
         }
     }
-    return *this;
+    return new_integer;
 }
 
-BigInteger& BigInteger::operator-(const BigInteger& b) {
-    if(b.sign != sign) {
-        storage = add(storage, b.storage);
+BigInteger BigInteger::operator-(const BigInteger& b) {
+    BigInteger new_integer = *this;
+    if(b.sign != new_integer.sign) {
+        new_integer.storage = add(new_integer.storage, b.storage);
     } else {
-        int cmp = compareStorage(storage, b.storage);
+        auto cmp = compareStorage(new_integer.storage, b.storage);
         if(cmp == 0) {
-            storage.resize(1);
-            storage[0] = 0;
-            sign = false;
-            return *this;
+            new_integer.storage.resize(1);
+            new_integer.storage[0] = 0;
+            new_integer.sign = false;
+            return new_integer;
         } else {
             if(cmp > 0) {
-                storage = subtract(storage, b.storage);
+                new_integer.storage = subtract(new_integer.storage, b.storage);
             } else {
-                storage = subtract(b.storage, storage);
-                sign = !sign;
+                new_integer.storage = subtract(b.storage, new_integer.storage);
+                new_integer.sign = !new_integer.sign;
             }
         }
     }
 
-    normalize(storage);
-    return *this;
+    normalize(new_integer.storage);
+    return new_integer;
 }
 
-BigInteger& BigInteger::operator*(const BigInteger& b) {
-    std::vector<std::uint64_t> tmp(storage.size() + b.storage.size(), 0);
+BigInteger BigInteger::operator*(const BigInteger& b) {
+    BigInteger new_integer = *this;
+    std::vector<std::uint64_t> tmp(new_integer.storage.size() + b.storage.size(), 0);
 
-    for(auto i = 0u; i < storage.size(); i++) {
+    for(auto i = 0u; i < new_integer.storage.size(); i++) {
         for(auto j = 0u; j < b.storage.size(); j++) {
             tmp[i + j] += static_cast<std::uint64_t>(storage[i]) * static_cast<std::uint64_t>(b.storage[j]);
             if(tmp[i + j] > UINT32_MAX) {
@@ -170,36 +164,37 @@ BigInteger& BigInteger::operator*(const BigInteger& b) {
         }
     }
 
-    storage.resize(tmp.size());
-    for(auto i = 0u; i < storage.size(); i++) {
-        storage[i] = static_cast<std::uint32_t>(tmp[i]);
+    new_integer.storage.resize(tmp.size());
+    for(auto i = 0u; i < new_integer.storage.size(); i++) {
+        new_integer.storage[i] = static_cast<std::uint32_t>(tmp[i]);
     }
 
     if(sign && !b.sign || !sign && b.sign)
-        sign = true;
+        new_integer.sign = true;
     else
-        sign = false;
+        new_integer.sign = false;
 
-    normalize();
-    return *this;
+    normalize(new_integer.storage);
+    return new_integer;
 }
 
-BigInteger& BigInteger::operator/(const BigInteger& b) {
+BigInteger BigInteger::operator/(const BigInteger& b) {
+    BigInteger new_integer = *this;
     int m = storage.size();
     int n = b.storage.size();
 
     auto quotient = std::vector<std::uint32_t>(m - n + 1);
     auto r = std::vector<std::uint32_t>(n);
 
-    if(divmnu(quotient, r, storage, b.storage)) {
+    if(divmnu(quotient, r, new_integer.storage, b.storage)) {
         // TODO EXCEPTION THROW
-        return *this;
+        return new_integer;
     }
 
-    storage = quotient;
-    sign = (sign || b.sign) && !(sign && b.sign);
+    new_integer.storage = quotient;
+    new_integer.sign = (new_integer.sign || b.sign) && !(new_integer.sign && b.sign);
 
-    return *this;
+    return new_integer;
 }
 
 bool BigInteger::operator<(const BigInteger& b) const {
@@ -208,17 +203,20 @@ bool BigInteger::operator<(const BigInteger& b) const {
     else if(!sign && b.sign)
         return false;
     else if(sign == b.sign) {
-        if(storage.size() < b.storage.size())
-            return true;
-        else if(storage.size() > b.storage.size())
-            return false;
-        else {
-            if(storage.back() < b.storage.back())
+        auto result = compareStorage(storage, b.storage);
+        if(sign) {
+            if(result == 1)
+                return true;
+            else
+                return false;
+        } else {
+            if(result == -1)
                 return true;
             else
                 return false;
         }
     }
+    return false;
 }
 
 bool BigInteger::operator>(const BigInteger& b) const {
@@ -227,17 +225,20 @@ bool BigInteger::operator>(const BigInteger& b) const {
     else if(!sign && b.sign)
         return true;
     else if(sign == b.sign) {
-        if(storage.size() > b.storage.size())
-            return true;
-        else if(storage.size() < b.storage.size())
-            return false;
-        else {
-            if(storage.back() > b.storage.back())
+        auto result = compareStorage(storage, b.storage);
+        if(sign) {
+            if(result == -1)
+                return true;
+            else
+                return false;
+        } else {
+            if(result == 1)
                 return true;
             else
                 return false;
         }
     }
+    return false;
 }
 
 bool BigInteger::operator==(const BigInteger& b) const {
@@ -246,7 +247,8 @@ bool BigInteger::operator==(const BigInteger& b) const {
             if(storage[i] != b.storage[i])
                 return false;
         return true;
-    }
+    } else
+        return false;
 }
 
 // OTHER FUNCTIONS
@@ -297,7 +299,7 @@ std::string BigInteger::to_string() {
 }
 
 // Helper methods
-int BigInteger::compareStorage(std::vector<std::uint32_t> s1, std::vector<std::uint32_t> s2) {
+int BigInteger::compareStorage(const std::vector<std::uint32_t>& s1, const std::vector<std::uint32_t>& s2) const {
     auto len1 = s1.size();
     auto len2 = s2.size();
 
@@ -320,7 +322,7 @@ int BigInteger::compareStorage(std::vector<std::uint32_t> s1, std::vector<std::u
     }
     return 0;
 }
-std::vector<std::uint32_t> BigInteger::add(std::vector<std::uint32_t> s1, std::vector<std::uint32_t> s2) {
+std::vector<std::uint32_t> BigInteger::add(const std::vector<std::uint32_t>& s1, const std::vector<std::uint32_t>& s2) {
     std::uint64_t tmp = 0;
     bool carry_bit = false;
 
@@ -355,17 +357,13 @@ std::vector<std::uint32_t> BigInteger::add(std::vector<std::uint32_t> s1, std::v
     return result;
 }
 // Assumes s2 smaller than this.storage
-std::vector<std::uint32_t> BigInteger::subtract(std::vector<std::uint32_t> s1, std::vector<std::uint32_t> s2) {
+std::vector<std::uint32_t> BigInteger::subtract(const std::vector<std::uint32_t>& s1, const std::vector<std::uint32_t>& s2) {
     std::int64_t tmp = 0;
     bool borrow_bit = false;
-
     auto result = std::vector<std::uint32_t>(s1);
 
-    auto s1Size = s1.size();
-    auto s2Size = s2.size();
-
-    for(auto i = 0u; i < s1Size; i++) {
-        if(i < s2Size)
+    for(auto i = 0u; i < s1.size(); i++) {
+        if(i < s2.size())
             tmp = static_cast<std::int64_t>(s1[i]) - static_cast<std::int64_t>(s2[i]);
         else
             tmp = static_cast<std::int64_t>(s1[i]);
@@ -376,7 +374,7 @@ std::vector<std::uint32_t> BigInteger::subtract(std::vector<std::uint32_t> s1, s
         }
 
         if(tmp < 0) {
-            result[i] = (static_cast<std::int64_t>(UINT32_MAX) + tmp) >> 32;
+            result[i] = static_cast<std::uint32_t>(tmp);
             borrow_bit = true;
         } else
             result[i] = static_cast<std::uint32_t>(tmp);
@@ -389,7 +387,7 @@ std::vector<std::uint32_t> BigInteger::subtract(std::vector<std::uint32_t> s1, s
     return result;
 }
 
-std::uint8_t BigInteger::nlz(std::uint32_t x) {
+std::uint8_t nlz(std::uint32_t x) {
     int n;
 
     if(x == 0)
@@ -527,7 +525,7 @@ bool BigInteger::divmnu(std::vector<std::uint32_t>& quotient, std::vector<std::u
     // If the caller wants the remainder, unnormalize
     // it and pass it back.
     if(&remainder != NULL) {
-        for(i = 0; i < divisorLen - 1; i++)
+        for(i = 0u; i < divisorLen - 1; i++)
             remainder[i] = (normalDividend[i] >> divisorShift) | (static_cast<std::uint64_t>(normalDividend[i + 1]) << (32 - divisorShift));
         remainder[divisorLen - 1] = normalDividend[divisorLen - 1] >> divisorShift;
     }

@@ -5,8 +5,8 @@ namespace ut {
 using namespace oiak;
 
 TEST(big_integer_other_tests, to_string1) {
-	auto x = BigInteger(-123);
-	EXPECT_EQ(x.to_string(), "-7b");
+    auto x = BigInteger(-123);
+    EXPECT_EQ(x.to_string(), "-7b");
 }
 
 TEST(big_integer_other_tests, to_string2) {
@@ -28,7 +28,7 @@ TEST(big_integer_other_tests, sign) {
     EXPECT_TRUE(x.get_sign());
 }
 
-//TEST(big_integer_helper_tests, compare_storages) {
+// TEST(big_integer_helper_tests, compare_storages) {
 //    auto x = BigInteger(256);
 //    auto y = BigInteger(-356);
 //    EXPECT_EQ(compareStorage(xy), -1);

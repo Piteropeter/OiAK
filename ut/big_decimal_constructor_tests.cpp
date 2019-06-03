@@ -62,9 +62,9 @@ TEST(big_decimal_constructor_tests, string_constructor4) {
 }
 
 TEST(big_decimal_constructor_tests, string_constructor5) {
-	auto x = BigDecimal("20");
-	EXPECT_FALSE(x.get_sign());
-	EXPECT_EQ("1 * 2 ^ 5", x.to_science_notation());
+    auto x = BigDecimal("20");
+    EXPECT_FALSE(x.get_sign());
+    EXPECT_EQ("1 * 2 ^ 5", x.to_science_notation());
 }
 
 } // namespace ut

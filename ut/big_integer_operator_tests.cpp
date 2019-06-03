@@ -61,13 +61,15 @@ TEST(big_integer_operator_tests, sum_of_positive_and_negative) {
     auto x = BigInteger(123);
     auto y = BigInteger(-123);
     x = x + y;
-    EXPECT_EQ(x.size(), 0);
+    EXPECT_EQ(x.size(), 1);
+    EXPECT_EQ(x[0], 0);
 }
 
 TEST(big_integer_operator_tests, sum_of_positive_and_negative_smaller) {
     auto x = BigInteger(123);
     auto y = BigInteger(-100);
     x = x + y;
+    EXPECT_EQ(x.size(), 1);
     EXPECT_EQ(x[0], 23);
 }
 
@@ -83,14 +85,15 @@ TEST(big_integer_operator_tests, sum_of_big_same_positive_and_negative) {
     auto x = BigInteger(0xfffffffffffffff);
     auto y = BigInteger(-0xfffffffffffffff);
     x = x + y;
-    EXPECT_EQ(x.size(), 0);
+    EXPECT_EQ(x.size(), 1);
+    EXPECT_EQ(x[0], 0);
 }
 
 TEST(big_integer_operator_tests, sum_of_big_positive_and_negative_smaller) {
     auto x = BigInteger(0xfffffffffffffff);
     auto y = BigInteger(-0xffffffffffffff);
     x = x + y;
-    EXPECT_EQ(x[1], 251658240); // to je git
+    EXPECT_EQ(x[1], 251658240);
     EXPECT_EQ(x[0], 0);
     EXPECT_FALSE(x.get_sign());
 }
@@ -105,11 +108,11 @@ TEST(big_integer_operator_tests, sum_of_big_positive_and_negative_bigger) {
 }
 
 TEST(big_integer_operator_tests, sum_of_negative_and_one) {
-	auto x = BigInteger("-10");
-	auto y = BigInteger(1);
-	x = x + y;
-	EXPECT_EQ(x.to_string(), "-f");
-	EXPECT_TRUE(x.get_sign());
+    auto x = BigInteger("-10");
+    auto y = BigInteger(1);
+    x = x + y;
+    EXPECT_EQ(x.to_string(), "-f");
+    EXPECT_TRUE(x.get_sign());
 }
 
 TEST(big_integer_operator_tests, ultimate_sum) {
@@ -181,14 +184,23 @@ TEST(big_integer_operator_tests, subtraction_of_negative_and_positive) {
 }
 
 TEST(big_integer_operator_tests, subtraction_to_zero) {
-	auto x = BigInteger(4);
-	auto y = BigInteger(4);
-	x = x - y;
-	EXPECT_EQ(x.size(), 1);
-	EXPECT_EQ(x[0], 0);
-	EXPECT_FALSE(x.get_sign());
+    auto x = BigInteger(4);
+    auto y = BigInteger(4);
+    x = x - y;
+    EXPECT_EQ(x.size(), 1);
+    EXPECT_EQ(x[0], 0);
+    EXPECT_FALSE(x.get_sign());
 }
 
+TEST(big_integer_operator_tests, different_sizes_subtraction) {
+    auto x = BigInteger(0x123000000000);
+    auto y = BigInteger(0x123);
+    x = x - y;
+    EXPECT_EQ(x.size(), 2);
+    EXPECT_EQ(x[1], 0x122f);
+    EXPECT_EQ(x[0], 0xfffffedd);
+    EXPECT_FALSE(x.get_sign());
+}
 
 TEST(big_integer_operator_tests, ultimate_subtraction) {
     auto x = BigInteger("123456789abcdef0fedcba987654321");
@@ -270,15 +282,15 @@ TEST(big_integer_operator_tests, ultimate_multiplying) {
 
 /// DIVIDING
 
- TEST(big_integer_operator_tests, simple_division) {
-	auto x = BigInteger("ffffffffffffffffffffff");
-	auto y = BigInteger("222222222");
-	auto z = x / y;
+TEST(big_integer_operator_tests, simple_division) {
+    auto x = BigInteger("ffffffffffffffffffffff");
+    auto y = BigInteger("222222222");
+    auto z = x / y;
 
-	EXPECT_EQ(z.to_string(), "78000000078000");
+    EXPECT_EQ(z.to_string(), "78000000078000");
 }
 
- TEST(big_integer_operator_tests, division_big_dividend_small_divisor) {
+TEST(big_integer_operator_tests, division_big_dividend_small_divisor) {
     auto x = BigInteger("ffffffffffffffffffffff");
     auto y = BigInteger("1");
     auto z = x / y;
@@ -286,7 +298,7 @@ TEST(big_integer_operator_tests, ultimate_multiplying) {
     EXPECT_EQ(z.to_string(), "ffffffffffffffffffffff");
 }
 
- TEST(big_integer_operator_tests, division_same_dividend_and_divisor) {
+TEST(big_integer_operator_tests, division_same_dividend_and_divisor) {
     auto x = BigInteger("ffffffffffffffffffffff");
     auto y = BigInteger("ffffffffffffffffffffff");
     auto z = x / y;
@@ -319,11 +331,11 @@ TEST(big_integer_operator_tests, division_negative_dividend_negative_divisor) {
 }
 
 TEST(big_integer_operator_tests, ultimate_dividing) {
-	auto x = BigInteger("123456789abcdef0fedcba987654321");
-	auto y = BigInteger("fffffffffffffffffffffffffffffff");
-	auto z = y / x;
+    auto x = BigInteger("123456789abcdef0fedcba987654321");
+    auto y = BigInteger("fffffffffffffffffffffffffffffff");
+    auto z = y / x;
 
-	EXPECT_EQ(z.to_string(), "e");
+    EXPECT_EQ(z.to_string(), "e");
 }
 
 /// OTHER OPERATORS
@@ -345,19 +357,35 @@ TEST(big_integer_operator_tests, compare_operators_test2) {
 }
 
 TEST(big_integer_operator_tests, compare_operators_test3) {
-	auto x = BigInteger(-15);
-	auto y = BigInteger(15);
+    auto x = BigInteger(-15);
+    auto y = BigInteger(15);
 
-	EXPECT_FALSE(x > y);
-	EXPECT_TRUE(x < y);
+    EXPECT_FALSE(x > y);
+    EXPECT_TRUE(x < y);
 }
 
 TEST(big_integer_operator_tests, compare_operators_test4) {
-	auto x = BigInteger(-432);
-	auto y = BigInteger(-432);
+    auto x = BigInteger(-432);
+    auto y = BigInteger(-432);
 
-	EXPECT_TRUE(x == y);
-	//EXPECT_FALSE(x != y);
+    EXPECT_TRUE(x == y);
+    // EXPECT_FALSE(x != y);
+}
+
+TEST(big_integer_operator_tests, compare_operators_test5) {
+    auto x = BigInteger(0xffffffffffffffff);
+    auto y = BigInteger(0xfffffffffffffffe);
+
+    EXPECT_TRUE(x > y);
+    EXPECT_FALSE(x < y);
+}
+
+TEST(big_integer_operator_tests, compare_operators_test6) {
+    auto x = BigInteger(-18);
+    auto y = BigInteger(-1);
+
+    EXPECT_FALSE(x > y);
+    EXPECT_TRUE(x < y);
 }
 
 } // namespace ut

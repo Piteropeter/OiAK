@@ -9,24 +9,27 @@
 namespace oiak {
 
 class BigDecimal {
-	BigInteger significand;
-	BigInteger exponent;
+    BigInteger significand;
+    BigInteger exponent;
 
 public:
-	BigDecimal() = default;
-	BigDecimal(BigInteger significand, BigInteger exponent, bool sign = false);
-	BigDecimal(double value);
-	BigDecimal(std::string str);
+    BigDecimal() = default;
+    BigDecimal(BigInteger significand, BigInteger exponent, bool sign = false);
+    BigDecimal(double value);
+    BigDecimal(std::string str);
 
-	BigDecimal& operator=(const BigDecimal&);
-	BigDecimal& operator+(const BigDecimal&);
-	BigDecimal& operator-(const BigDecimal&);
-	BigDecimal& operator*(const BigDecimal&);
-	BigDecimal& operator/(const BigDecimal&);
+    BigDecimal& operator=(const BigDecimal&);
+    BigDecimal operator+(const BigDecimal&);
+    BigDecimal operator-(const BigDecimal&);
+    BigDecimal operator*(const BigDecimal&);
+    BigDecimal operator/(const BigDecimal&);
 
     bool get_sign() const;
     std::string to_string();
     std::string to_science_notation();
+
+private:
+    void normalize();
 };
 
 } // namespace oiak
