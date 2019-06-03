@@ -112,7 +112,7 @@ BigInteger& BigInteger::operator=(const BigInteger& b) {
 }
 
 BigInteger& BigInteger::operator+(const BigInteger& b) {
-    if(!sign && !b.sign) {
+    if((!sign && !b.sign) || (sign && b.sign )) {
         storage = add(storage, b.storage);
         return *this;
     }
@@ -121,17 +121,17 @@ BigInteger& BigInteger::operator+(const BigInteger& b) {
     int cmp = compareStorage(storage, b.storage);
     if(cmp == 0) {
         storage.clear();
+        sign = false;
         return *this;
     }
 
     if(cmp > 0) {
-        storage = subtract(storage, b.storage);
-        sign = false;
+        storage = subtract(storage, b.storage);            
     } else {
         storage = subtract(b.storage, storage);
-        sign = true;
+		sign = b.sign;
     }
-
+	
     return *this;
 }
 
@@ -140,15 +140,17 @@ BigInteger& BigInteger::operator-(const BigInteger& b) {
         storage = add(storage, b.storage);
     } else {
         int cmp = compareStorage(storage, b.storage);
-        if(cmp == 0)
+        if(cmp == 0) {
             storage.clear();
+            sign = false;
+        }
+            
 
         if(cmp > 0) {
             storage = subtract(storage, b.storage);
-            sign = false;
         } else {
             storage = subtract(b.storage, storage);
-            sign = true;
+            sign = !sign;
         }
 	}
 
