@@ -72,10 +72,10 @@ BigDecimal::BigDecimal(std::string str) {
         significand = BigInteger(str);
         exponent = BigInteger(0);
     }
-	while(!(significand[0] % 2)) {
-		significand = significand / BigInteger(2);
-		exponent = exponent + BigInteger(1);
-	}
+    while(!(significand[0] % 2)) {
+        significand = significand / BigInteger(2);
+        exponent = exponent + BigInteger(1);
+    }
     if(sign)
         significand.set_sign(true);
 }
@@ -85,7 +85,7 @@ BigDecimal::BigDecimal(std::string str) {
 BigDecimal& BigDecimal::operator=(const BigDecimal& b) {
     significand = b.significand;
     exponent = b.exponent;
-	return *this;
+    return *this;
 }
 
 // OTHER FUNCTIONS
@@ -95,40 +95,51 @@ bool BigDecimal::get_sign() const {
 }
 
 std::string BigDecimal::to_string() {
-	std::stringstream ss;
-	BigInteger significand = this->significand;
+    std::stringstream ss;
+    BigInteger significand = this->significand;
+    BigInteger exponent = this->exponent;
 
-	while(!(exponent[0] % 4))
-	{
-		significand = significand * BigInteger(2);
-		exponent = exponent - BigInteger(1);
-	}
-	std::string basic_string = significand.to_string();
-	//auto rbegin = basic_string.rbegin();
-	std::int64_t offset = 0;
-	
-	if(exponent < BigInteger(0)) {
-		while(!(exponent == BigInteger(0))) {
-			offset--;
-			exponent = exponent + BigInteger(4);
-		}
+    while(exponent[0] % 4) {
+        significand = significand * BigInteger(2);
+        exponent = exponent - BigInteger(1);
+    }
+    std::string basic_string = significand.to_string();
+    // auto rbegin = basic_string.rbegin();
+    std::int64_t offset = 0;
 
+    if(exponent < BigInteger(0)) {
+        while(!(exponent == BigInteger(0))) {
+            offset--;
+            exponent = exponent + BigInteger(4);
+        }
 
-
-	} else if(exponent > BigInteger(0)) {
-		while(!(exponent == BigInteger(0))) {
+        while(offset < 0) {
+            basic_string.push_back('0');
 			offset++;
-			exponent = exponent - BigInteger(4);
-		}
+        }
+        ss << basic_string;
 
+    } else if(exponent > BigInteger(0)) {
+        while(!(exponent == BigInteger(0))) {
+            offset++;
+            exponent = exponent - BigInteger(4);
+        }
 
+        if(offset > basic_string.size()) {
+            while(offset > basic_string.size()) {
+                basic_string.insert(basic_string.begin(), '0');
+            }
+            ss << "0." << basic_string;
+        } else {
+            basic_string.insert(basic_string.begin() + offset, '.');
+            ss << basic_string;
+        }
 
-	}
-	else {
-		ss << significand.to_string() << ".0";
-	}
-	
-	return ss.str();
+    } else {
+        ss << significand.to_string() << ".0";
+    }
+
+    return ss.str();
 }
 
 std::string BigDecimal::to_science_notation() {

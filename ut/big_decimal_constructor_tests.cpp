@@ -58,7 +58,7 @@ TEST(big_decimal_constructor_tests, string_constructor3) {
 TEST(big_decimal_constructor_tests, string_constructor4) {
     auto x = BigDecimal("-0.0008");
     EXPECT_TRUE(x.get_sign());
-    EXPECT_EQ("-8 * 2 ^ -10", x.to_science_notation());
+    EXPECT_EQ("-1 * 2 ^ -d", x.to_science_notation());
 }
 
 TEST(big_decimal_constructor_tests, string_constructor5) {

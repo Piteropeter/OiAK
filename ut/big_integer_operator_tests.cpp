@@ -180,6 +180,16 @@ TEST(big_integer_operator_tests, subtraction_of_negative_and_positive) {
     EXPECT_TRUE(x.get_sign());
 }
 
+TEST(big_integer_operator_tests, subtraction_to_zero) {
+	auto x = BigInteger(4);
+	auto y = BigInteger(4);
+	x = x - y;
+	EXPECT_EQ(x.size(), 1);
+	EXPECT_EQ(x[0], 0);
+	EXPECT_FALSE(x.get_sign());
+}
+
+
 TEST(big_integer_operator_tests, ultimate_subtraction) {
     auto x = BigInteger("123456789abcdef0fedcba987654321");
     auto y = BigInteger("fffffffffffffffffffffffffffffff");
@@ -332,6 +342,22 @@ TEST(big_integer_operator_tests, compare_operators_test2) {
 
     EXPECT_TRUE(x < y);
     EXPECT_FALSE(x > y);
+}
+
+TEST(big_integer_operator_tests, compare_operators_test3) {
+	auto x = BigInteger(-15);
+	auto y = BigInteger(15);
+
+	EXPECT_FALSE(x > y);
+	EXPECT_TRUE(x < y);
+}
+
+TEST(big_integer_operator_tests, compare_operators_test4) {
+	auto x = BigInteger(-432);
+	auto y = BigInteger(-432);
+
+	EXPECT_TRUE(x == y);
+	//EXPECT_FALSE(x != y);
 }
 
 } // namespace ut

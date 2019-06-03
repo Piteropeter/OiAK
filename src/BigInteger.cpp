@@ -140,8 +140,10 @@ BigInteger& BigInteger::operator-(const BigInteger& b) {
         storage = add(storage, b.storage);
     } else {
         int cmp = compareStorage(storage, b.storage);
-        if(cmp == 0)
-            storage.clear();
+		if(cmp == 0) {
+			storage.clear();
+			sign = false;
+		}
 
         if(cmp > 0) {
             storage = subtract(storage, b.storage);
@@ -201,28 +203,40 @@ BigInteger& BigInteger::operator/(const BigInteger& b) {
 }
 
 bool BigInteger::operator<(const BigInteger& b) const {
-    if(storage.size() < b.storage.size())
+    if(sign && !b.sign)
         return true;
-    else if(storage.size() > b.storage.size())
+    else if(!sign && b.sign)
         return false;
-    else {
-        if(storage.back() < b.storage.back())
+    else if(sign == b.sign) {
+        if(storage.size() < b.storage.size())
             return true;
-        else
+        else if(storage.size() > b.storage.size())
             return false;
+        else {
+            if(storage.back() < b.storage.back())
+                return true;
+            else
+                return false;
+        }
     }
 }
 
 bool BigInteger::operator>(const BigInteger& b) const {
-    if(storage.size() > b.storage.size())
-        return true;
-    else if(storage.size() < b.storage.size())
+    if(sign && !b.sign)
         return false;
-    else {
-        if(storage.back() > b.storage.back())
+    else if(!sign && b.sign)
+        return true;
+    else if(sign == b.sign) {
+        if(storage.size() > b.storage.size())
             return true;
-        else
+        else if(storage.size() < b.storage.size())
             return false;
+        else {
+            if(storage.back() > b.storage.back())
+                return true;
+            else
+                return false;
+        }
     }
 }
 

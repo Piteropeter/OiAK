@@ -22,6 +22,16 @@ TEST(big_decimal_other_tests, to_string1) {
 }
 
 TEST(big_decimal_other_tests, to_string2) {
+	auto x = BigDecimal("0.00456");
+	EXPECT_EQ(x.to_string(), "0.00456");
+}
+
+TEST(big_decimal_other_tests, to_string3) {
+	auto x = BigDecimal("12300.0");
+	EXPECT_EQ(x.to_string(), "12300.0");
+}
+
+TEST(big_decimal_other_tests, to_string4) {
 	auto x = BigDecimal("123.456");
 	EXPECT_EQ(x.to_string(), "123.456");
 }
