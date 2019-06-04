@@ -11,16 +11,16 @@ TEST(big_decimal_other_tests, sign) {
     EXPECT_TRUE(x.get_sign());
 }
 
-TEST(big_decimal_other_tests, to_science_notation1) {
+TEST(big_decimal_other_tests, to_exponential_notation1) {
     auto x = BigDecimal();
-    ASSERT_NO_THROW(x.to_science_notation());
-    EXPECT_EQ(x.to_science_notation(), "0 * 2 ^ 0");
+    ASSERT_NO_THROW(x.to_exponential_notation());
+    EXPECT_EQ(x.to_exponential_notation(), "0 * 2 ^ 0");
 }
 
-TEST(big_decimal_other_tests, to_science_notation2) {
+TEST(big_decimal_other_tests, to_exponential_notation2) {
     auto x = BigDecimal("-452345.4567");
-    ASSERT_NO_THROW(x.to_science_notation());
-    EXPECT_EQ(x.to_science_notation(), "-4523454567 * 2 ^ -10");
+    ASSERT_NO_THROW(x.to_exponential_notation());
+    EXPECT_EQ(x.to_exponential_notation(), "-4523454567 * 2 ^ -10");
 }
 
 TEST(big_decimal_other_tests, to_string1) {

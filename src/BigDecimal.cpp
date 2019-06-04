@@ -111,7 +111,7 @@ BigDecimal BigDecimal::operator+(const BigDecimal& b) {
         new_decimal.significand = new_decimal.significand + b.significand;
     }
 
-    normalize();
+    normalize(new_decimal);
     return new_decimal;
 }
 
@@ -138,7 +138,7 @@ BigDecimal BigDecimal::operator-(const BigDecimal& b) {
         new_decimal.significand = new_decimal.significand - b.significand;
     }
 
-    normalize();
+    normalize(new_decimal);
     return new_decimal;
 }
 
@@ -148,17 +148,26 @@ BigDecimal BigDecimal::operator*(const BigDecimal& b) {
     new_decimal.significand = new_decimal.significand * b.significand;
     new_decimal.exponent = new_decimal.exponent + b.exponent;
 
-    normalize();
+    normalize(new_decimal);
     return new_decimal;
 }
 
 BigDecimal BigDecimal::operator/(const BigDecimal& b) {
     BigDecimal new_decimal = *this;
 
+    if(new_decimal.significand < b.significand) {
+        while(new_decimal.significand < b.significand) {
+            new_decimal.significand = new_decimal.significand * BigInteger(2);
+            new_decimal.exponent = new_decimal.exponent - BigInteger(1);
+        }
+    }
+
     new_decimal.significand = new_decimal.significand / b.significand;
     new_decimal.exponent = new_decimal.exponent - b.exponent;
 
-    normalize();
+    //std::cout << "SIG: " << new_decimal.significand.to_string() << "\n";
+
+    normalize(new_decimal);
     return new_decimal;
 }
 
@@ -213,17 +222,20 @@ std::string BigDecimal::to_string() {
     return ss.str();
 }
 
-std::string BigDecimal::to_science_notation() {
+std::string BigDecimal::to_exponential_notation() {
     std::stringstream ss;
     ss << significand.to_string() << " * 2 ^ " << exponent.to_string();
     return ss.str();
 }
 
-void BigDecimal::normalize() {
-    while(!(significand[0] % 2)) {
-        significand = significand / BigInteger(2);
-        exponent = exponent + BigInteger(1);
-    }
+void BigDecimal::normalize(BigDecimal& b) {
+    if(b.significand.size() == 1 && b.significand[0] == 0)
+        b.exponent = BigInteger(0);
+    else
+        while(!(b.significand[0] % 2)) {
+            b.significand = b.significand / BigInteger(2);
+            b.exponent = b.exponent + BigInteger(1);
+        }
 }
 
 } // namespace oiak

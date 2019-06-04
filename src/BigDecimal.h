@@ -26,10 +26,10 @@ public:
 
     bool get_sign() const;
     std::string to_string();
-    std::string to_science_notation();
+    std::string to_exponential_notation();
 
 private:
-    void normalize();
+    void normalize(BigDecimal& b);
 };
 
 } // namespace oiak

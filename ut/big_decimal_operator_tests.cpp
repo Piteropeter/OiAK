@@ -18,15 +18,15 @@ TEST(big_decimal_operator_tests, different_exponents_sum) {
     auto y = BigDecimal("0.000123");
     x = x + y;
     EXPECT_EQ(x.to_string(), "123000.000123");
-    EXPECT_EQ(x.to_science_notation(), "123000000123 * 2 ^ -24");
+    EXPECT_EQ(x.to_exponential_notation(), "123000000123 * 2 ^ -18");
 }
 
 TEST(big_decimal_operator_tests, different_exponents_positive_and_negative_sum) {
     auto x = BigDecimal("123000");
     auto y = BigDecimal("-0.000123");
     x = x + y;
-    EXPECT_EQ(x.to_string(), "122fff.fffedd"); // 122fff fffedd * 16^(-6) = 122ff fffedd * 2^4^(-6) = ... * 2^(-24) ??
-    EXPECT_EQ(x.to_science_notation(), "122ffffffedd * 2 ^ -24");
+    EXPECT_EQ(x.to_string(), "122fff.fffedd");
+    EXPECT_EQ(x.to_exponential_notation(), "122ffffffedd * 2 ^ -18");
 }
 
 TEST(big_decimal_operator_tests, different_exponents_negative_and_positive_sum) {
@@ -34,7 +34,7 @@ TEST(big_decimal_operator_tests, different_exponents_negative_and_positive_sum) 
     auto y = BigDecimal("0.000123");
     x = x + y;
     EXPECT_EQ(x.to_string(), "-122fff.fffedd");
-    EXPECT_EQ(x.to_science_notation(), "-122ffffffedd * 2 ^ -24");
+    EXPECT_EQ(x.to_exponential_notation(), "-122ffffffedd * 2 ^ -18");
 }
 
 TEST(big_decimal_operator_tests, same_exponents_positive_and_negative_sum) {
@@ -42,7 +42,7 @@ TEST(big_decimal_operator_tests, same_exponents_positive_and_negative_sum) {
     auto y = BigDecimal("-123");
     x = x + y;
     EXPECT_EQ(x.to_string(), "122edd");
-    EXPECT_EQ(x.to_science_notation(), "122edd * 2 ^ 0");
+    EXPECT_EQ(x.to_exponential_notation(), "122edd * 2 ^ 0");
 }
 
 TEST(big_decimal_operator_tests, same_exponents_negative_and_positive_sum) {
@@ -50,7 +50,7 @@ TEST(big_decimal_operator_tests, same_exponents_negative_and_positive_sum) {
     auto y = BigDecimal("100");
     x = x + y;
     EXPECT_EQ(x.to_string(), "-122f00");
-    EXPECT_EQ(x.to_science_notation(), "-122f * 2 ^ 8");
+    EXPECT_EQ(x.to_exponential_notation(), "-122f * 2 ^ 8");
 }
 
 TEST(big_decimal_operator_tests, same_exponents_negative_and_positive_sum_to_zero) {
@@ -58,7 +58,7 @@ TEST(big_decimal_operator_tests, same_exponents_negative_and_positive_sum_to_zer
     auto y = BigDecimal("123000");
     x = x + y;
     EXPECT_EQ(x.to_string(), "0");
-    EXPECT_EQ(x.to_science_notation(), "0 * 2 ^ 0");
+    EXPECT_EQ(x.to_exponential_notation(), "0 * 2 ^ 0");
 }
 
 /// SUBTRACTION
@@ -97,23 +97,23 @@ TEST(big_decimal_operator_tests, different_exponents_multiplying) {
 
 TEST(big_decimal_operator_tests, basic_dividing) {
     auto x = BigDecimal("16.8");
-    auto y = BigDecimal("16.8");
+    auto y = BigDecimal("2d");
     x = x / y;
-    EXPECT_EQ(x.to_string(), "1");
+    EXPECT_EQ(x.to_string(), "0.8");
 }
 
 TEST(big_decimal_operator_tests, different_exponents_dividing) {
-    auto x = BigDecimal("123000");
+    auto x = BigDecimal("246000");
     auto y = BigDecimal("0.123");
     x = x / y;
-    EXPECT_EQ(x.to_string(), "1000000");
+    EXPECT_EQ(x.to_string(), "2000000");
 }
 
 TEST(big_decimal_operator_tests, rounding_test) {
-    auto x = BigDecimal("4.25");
-    auto y = BigDecimal("3.8253825382538253825382538253825");
+    auto x = BigDecimal("4.25");                              // 4,14453125
+    auto y = BigDecimal("3.8253825382538253825382538253825"); // 3,509086747539482
     x = x / y;
-    EXPECT_EQ(x.to_string(), "1.11");
+    EXPECT_EQ(x.to_string(), "1.11"); // 1,06640625
 }
 
 /// OTHER OPERATORS
