@@ -4,15 +4,15 @@
 
 namespace oiak {
 
-	void normalize(std::vector<std::uint32_t>& store) {
-		if(store.size() > 1 && store.back() == 0) {
-			auto it = store.begin() + store.size() - 1;
-			while(*it == 0 && it != store.end() && store.size() > 1) {
-				store.erase(it);
-				it = store.begin() + store.size() - 1;
-			}
-		}
-	}
+void normalize(std::vector<std::uint32_t>& store) {
+    if(store.size() > 1 && store.back() == 0) {
+        auto it = store.begin() + store.size() - 1;
+        while(*it == 0 && it != store.end() && store.size() > 1) {
+            store.erase(it);
+            it = store.begin() + store.size() - 1;
+        }
+    }
+}
 
 // CONSTRUCTORS
 
@@ -195,6 +195,64 @@ BigInteger BigInteger::operator/(const BigInteger& b) {
     new_integer.sign = (new_integer.sign || b.sign) && !(new_integer.sign && b.sign);
 
     return new_integer;
+}
+
+BigInteger BigInteger::operator<<(std::uint64_t shift) {
+    if(shift == 0)
+        return *this;
+
+    BigInteger newInt = *this;
+
+    auto leftShift = shift % 32;
+    auto rightShift = 32 - leftShift;
+
+    auto additionalSpace = 0;
+
+    if(nlz(storage.back()) < shift)
+        additionalSpace = ((shift - 1) / 32) + 1;
+
+    auto storeSize = storage.size() + additionalSpace;
+    auto store = std::vector<std::uint32_t>(storeSize);
+
+    auto storageInd = storage.size();
+
+    while(storageInd > 1) {
+        auto l = static_cast<std::uint64_t>(storage[--storageInd]) << leftShift;
+        auto r = storage[storageInd - 1] >> rightShift;
+        store[--storeSize] = l | r;
+    }
+
+    store[storeSize - storageInd] = storage[0] << leftShift;
+
+    normalize(store);
+    newInt.storage = store;
+    return newInt;
+}
+
+BigInteger BigInteger::operator>>(std::uint64_t shift) {
+    if(shift == 0)
+        return *this;
+
+    BigInteger newInt = *this;
+
+    auto rightShift = shift % 32;
+    auto leftShift = 32 - rightShift;
+
+    auto store = std::vector<std::uint32_t>(storage.size());
+
+    auto storeSize = store.size() - 1;
+    auto storageInd = storage.size() - 1;
+
+	store[storeSize--] = static_cast<std::uint64_t>(storage[storageInd]) >> rightShift;
+    while(storageInd > 0) {
+        auto l = static_cast<std::uint64_t>(storage[storageInd]) << leftShift;
+        auto r = storage[--storageInd] >> rightShift;
+        store[storeSize--] = l | r;
+    }
+
+    normalize(store);
+    newInt.storage = store;
+    return newInt;
 }
 
 bool BigInteger::operator<(const BigInteger& b) const {
@@ -387,7 +445,7 @@ std::vector<std::uint32_t> BigInteger::subtract(const std::vector<std::uint32_t>
     return result;
 }
 
-std::uint8_t nlz(std::uint32_t x) {
+std::uint8_t BigInteger::nlz(std::uint32_t x) {
     int n;
 
     if(x == 0)

@@ -73,7 +73,7 @@ BigDecimal::BigDecimal(std::string str) {
         exponent = BigInteger(0);
     }
     while(!(significand[0] % 2)) {
-        significand = significand / BigInteger(2);
+        significand = significand >> 1;
         exponent = exponent + BigInteger(1);
     }
     if(sign)
@@ -102,7 +102,7 @@ BigDecimal BigDecimal::operator+(const BigDecimal& b) {
     } else if(new_decimal.exponent < b.exponent) {
         temp = b;
         while(new_decimal.exponent < temp.exponent) {
-            temp.significand = temp.significand * BigInteger(2);
+            temp.significand = temp.significand << 1;
             temp.exponent = temp.exponent - BigInteger(1);
         }
 
@@ -121,7 +121,7 @@ BigDecimal BigDecimal::operator-(const BigDecimal& b) {
 
     if(new_decimal.exponent > b.exponent) {
         while(new_decimal.exponent > b.exponent) {
-            new_decimal.significand = new_decimal.significand * BigInteger(2);
+            new_decimal.significand = new_decimal.significand * BigInteger(2); // << breaks test
             new_decimal.exponent = new_decimal.exponent - BigInteger(1);
         }
 
@@ -129,7 +129,7 @@ BigDecimal BigDecimal::operator-(const BigDecimal& b) {
     } else if(new_decimal.exponent < b.exponent) {
         temp = b;
         while(new_decimal.exponent < temp.exponent) {
-            temp.significand = temp.significand * BigInteger(2);
+            temp.significand = temp.significand << 1;
             temp.exponent = temp.exponent - BigInteger(1);
         }
 
@@ -157,7 +157,7 @@ BigDecimal BigDecimal::operator/(const BigDecimal& b) {
 
     if(new_decimal.significand < b.significand) {
         while(new_decimal.significand < b.significand) {
-            new_decimal.significand = new_decimal.significand * BigInteger(2);
+            new_decimal.significand = new_decimal.significand << 1;
             new_decimal.exponent = new_decimal.exponent - BigInteger(1);
         }
     }
