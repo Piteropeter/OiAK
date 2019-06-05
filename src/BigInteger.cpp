@@ -108,7 +108,6 @@ BigInteger BigInteger::operator+(const BigInteger& b) {
         return new_integer;
     }
 
-    // Zero! Mo¿e zmiana reprezentacji znaku dla ³atwiejszej obs³ugi?
     auto cmp = compareStorage(new_integer.storage, b.storage);
     if(cmp == 0) {
         new_integer.storage.clear();
@@ -217,12 +216,9 @@ BigInteger BigInteger::operator<<(std::uint64_t shift) {
     auto storageInd = storage.size();
 
     while(storageInd > 1) {
-        auto l = static_cast<std::uint64_t>(storage[--storageInd]) << leftShift;
-        auto r = storage[storageInd - 1] >> rightShift;
-        store[--storeSize] = l | r;
+        store[--storeSize] = (storage[--storageInd] << leftShift) | (static_cast<std::uint64_t>(storage[storageInd - 1]) >> rightShift);
     }
-
-    store[storeSize - storageInd] = storage[0] << leftShift;
+    store[storeSize - storageInd] = static_cast<std::uint64_t>(storage[0]) >> rightShift;
 
     normalize(store);
     newInt.storage = store;
@@ -312,8 +308,8 @@ bool BigInteger::operator==(const BigInteger& b) const {
 // Alters left operand. Returns remainder as new BigInteger.
 BigInteger BigInteger::divide(const BigInteger& b) {
     
-    int m = storage.size();
-    int n = b.storage.size();
+    std::uint64_t m = storage.size();
+    std::uint64_t n = b.storage.size();
 
     auto quotient = std::vector<std::uint32_t>(m - n + 1);
     auto r = std::vector<std::uint32_t>(n);
@@ -490,6 +486,7 @@ std::uint8_t BigInteger::nlz(std::uint32_t x) const{
     return n;
 }
 
+// Number leading zeros. Returns nubmer of leading zeros.
 std::uint8_t BigInteger::nlz() const {
     return nlz(storage.back());
 }

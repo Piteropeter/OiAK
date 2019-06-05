@@ -401,6 +401,13 @@ TEST(big_integer_operator_tests, shift_left_test_2) {
     EXPECT_EQ(y[0], 256);
 }
 
+TEST(big_integer_operator_tests, shift_left_test_4) {
+    auto x = BigInteger(0xf0000000);
+    auto y = x << 4;
+
+    EXPECT_EQ(y.to_string(), "f00000000");
+}
+
 TEST(big_integer_operator_tests, big_shift_left_test) {
     auto x = BigInteger(0x10);
     auto y = x << 256;

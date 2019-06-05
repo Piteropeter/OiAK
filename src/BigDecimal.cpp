@@ -106,7 +106,7 @@ BigDecimal BigDecimal::operator+(const BigDecimal& b) {
     } else if(new_decimal.exponent < b.exponent) {
         temp = b;
         while(new_decimal.exponent < temp.exponent) {
-            temp.significand = temp.significand << 1;
+            temp.significand = temp.significand * BigInteger(2);
             temp.exponent = temp.exponent - BigInteger(1);
         }
 
@@ -133,7 +133,7 @@ BigDecimal BigDecimal::operator-(const BigDecimal& b) {
     } else if(new_decimal.exponent < b.exponent) {
         temp = b;
         while(new_decimal.exponent < temp.exponent) {
-            temp.significand = temp.significand << 1;
+            temp.significand = temp.significand * BigInteger(2);
             temp.exponent = temp.exponent - BigInteger(1);
         }
 
