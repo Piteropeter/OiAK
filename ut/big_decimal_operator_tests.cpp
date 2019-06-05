@@ -126,34 +126,34 @@ TEST(big_decimal_operator_tests, div_test_3) {
 TEST(big_decimal_operator_tests, div_test_4) {
     auto x = BigDecimal("5c4c");
     auto y = BigDecimal("cf0");
-    x = x.divide(y,10,0);
+    x = x.divide(y,10,Round::symetric_even);
     EXPECT_EQ(x.to_string(), "7.22519f894");
 }
 
 TEST(big_decimal_operator_tests, div_test_5) {
     auto x = BigDecimal("5c4c0");
     auto y = BigDecimal("cf0");
-    x = x.divide(y, 10, 0);
+    x = x.divide(y, 10, Round::symetric_even);
     EXPECT_EQ(x.to_string(), "72.2519f894");
 }
 
 TEST(big_decimal_operator_tests, div_test_round_even) {
     auto x = BigDecimal("5c4c");
     auto y = BigDecimal("cf0");
-    x = x.divide(y, 5, 0);
+    x = x.divide(y, 5, Round::symetric_even);
     EXPECT_EQ(x.to_string(), "7.2252");
 }
 
 TEST(big_decimal_operator_tests, div_test_round_even_2) {
     auto x = BigDecimal("5c4c");
     auto y = BigDecimal("cf00");
-    x = x.divide(y, 5, 0);
+    x = x.divide(y, 5, Round::symetric_even);
     EXPECT_EQ(x.to_string(), "0.72252");
 }
 TEST(big_decimal_operator_tests, div_test_round_even_3) {
     auto x = BigDecimal("5c4c");
     auto y = BigDecimal("cf000");
-    x = x.divide(y, 5, 0);
+    x = x.divide(y, 5, Round::symetric_even);
     EXPECT_EQ(x.to_string(), "0.07225");
 }
 

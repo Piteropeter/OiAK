@@ -157,27 +157,7 @@ BigDecimal BigDecimal::operator*(const BigDecimal& b) {
 }
 
 BigDecimal BigDecimal::operator/(const BigDecimal& b) {
-    //BigDecimal new_decimal = *this;
-    //new_decimal.divide(b, 32, 00);
-    //   if(new_decimal.significand < b.significand) {
-    //       while(new_decimal.significand < b.significand) {
-    //           new_decimal.significand = new_decimal.significand * BigInteger(2);
-    //           new_decimal.exponent = new_decimal.exponent - BigInteger(1);
-    //       }
-    //   }
-
-    // for(auto i = 0; i < 256; i++) {
-    //       new_decimal.significand = new_decimal.significand * BigInteger(2);
-    //       new_decimal.exponent = new_decimal.exponent - BigInteger(1);
-    //}
-
-    //   new_decimal.significand = new_decimal.significand / b.significand;
-    //   new_decimal.exponent = new_decimal.exponent - b.exponent;
-
-    //   //std::cout << "SIG: " << new_decimal.significand.to_string() << "\n";
-
-    //   normalize(new_decimal);
-    return this->divide(b, 32, 00);
+    return this->divide(b, 32, Round::symetric_even);
 }
 
 // OTHER FUNCTIONS
@@ -247,37 +227,51 @@ void BigDecimal::normalize(BigDecimal& b) {
         }
 }
 
-BigDecimal BigDecimal::divide(const BigDecimal& b, uint64_t precision, char roundigMode) {
+BigDecimal BigDecimal::divide(const BigDecimal& b, BigInteger precision, Round roundigMode = Round::symetric_even) {
     if(significand == 0)
         return BigDecimal("0.0");
-
+    BigInteger one = BigInteger(1);
     BigDecimal new_decimal = *this;
 
     auto precA = new_decimal.significand.size() * 32 - new_decimal.significand.nlz();
     auto precB = b.significand.size() * 32 - b.significand.nlz();
 
     // *4, bo jedna cyfra hex kodowana przez 4 cyfry bin
-    // +2 bity RS
     auto desiredPrec = precision * 4 + precB - 1;
     auto newPrec = desiredPrec - precA;
 
-    for(auto i = 0; i < newPrec; i++) {
+    for(auto i = BigInteger(0); i < newPrec; i = i + one) {
         new_decimal.significand = new_decimal.significand * BigInteger(2);
-        new_decimal.exponent = new_decimal.exponent - BigInteger(1);
+        new_decimal.exponent = new_decimal.exponent - one;
     }
     new_decimal.exponent = new_decimal.exponent - b.exponent;
 
     auto remainder = new_decimal.significand.divide(b.significand);
     remainder = remainder << 2;
-    remainder.divide(b.significand);
+    remainder = remainder / b.significand;
 
-    if(remainder[0] == 3)
-        new_decimal.significand = new_decimal.significand + BigInteger(1);
-    else if(remainder[0] == 2) {
-        if(new_decimal.significand[0] % 2)
+    switch(roundigMode) {
+    case Round::ceil:
+        if(!new_decimal.get_sign())
+            new_decimal.significand = new_decimal.significand + one;
+        break;
+    case Round::floor:
+        if(new_decimal.get_sign())
+            new_decimal.significand = new_decimal.significand - one;
+        break;
+    case Round::symetric_even:
+        if(remainder[0] == 3)
             new_decimal.significand = new_decimal.significand + BigInteger(1);
+        else if(remainder[0] == 2) {
+            if(new_decimal.significand[0] % 2)
+                new_decimal.significand = new_decimal.significand + BigInteger(1);
+        }
+        break;
+    case Round::cut:
+	defeault:
+        break;
     }
-
+   
     normalize(new_decimal);
     return new_decimal;
 }

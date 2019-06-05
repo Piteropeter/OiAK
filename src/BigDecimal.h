@@ -7,7 +7,12 @@
 #include "BigInteger.h"
 
 namespace oiak {
-
+	enum Round {
+		symetric_even,
+		floor,
+		ceil,
+		cut
+};
 class BigDecimal {
     BigInteger significand;
     BigInteger exponent;
@@ -25,7 +30,7 @@ public:
     BigDecimal operator/(const BigDecimal&);
 
 	// TODO enum
-    BigDecimal divide(const BigDecimal&, uint64_t precision, char roundigMode);
+    BigDecimal divide(const BigDecimal&, BigInteger , Round );
 
     bool get_sign() const;
     std::string to_string();
