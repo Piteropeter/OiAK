@@ -188,7 +188,7 @@ BigInteger BigInteger::operator/(const BigInteger& b) {
 
     if(divmnu(quotient, r, new_integer.storage, b.storage)) {
         // TODO EXCEPTION THROW
-        return new_integer;
+        return BigInteger("0");
     }
 
     new_integer.storage = quotient;
@@ -307,6 +307,23 @@ bool BigInteger::operator==(const BigInteger& b) const {
         return true;
     } else
         return false;
+}
+
+// Alters left operand. Returns remainder as new BigInteger.
+BigInteger BigInteger::divide(const BigInteger& b) {
+    
+    int m = storage.size();
+    int n = b.storage.size();
+
+    auto quotient = std::vector<std::uint32_t>(m - n + 1);
+    auto r = std::vector<std::uint32_t>(n);
+
+    divmnu(quotient, r, storage, b.storage);
+
+    storage = quotient;
+    sign = (sign || b.sign) && !(sign && b.sign);
+
+    return BigInteger(r);
 }
 
 // OTHER FUNCTIONS
@@ -445,7 +462,7 @@ std::vector<std::uint32_t> BigInteger::subtract(const std::vector<std::uint32_t>
     return result;
 }
 
-std::uint8_t BigInteger::nlz(std::uint32_t x) {
+std::uint8_t BigInteger::nlz(std::uint32_t x) const{
     int n;
 
     if(x == 0)
@@ -471,6 +488,10 @@ std::uint8_t BigInteger::nlz(std::uint32_t x) {
         n = n + 1;
     }
     return n;
+}
+
+std::uint8_t BigInteger::nlz() const {
+    return nlz(storage.back());
 }
 
 /* q[0], r[0], u[0], and v[0] contain the LEAST significant words.

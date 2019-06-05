@@ -9,6 +9,7 @@ BigDecimal::BigDecimal(BigInteger significand, BigInteger exponent, bool sign) {
     this->significand = significand;
     this->exponent = exponent;
     this->significand.set_sign(sign);
+    normalize(*this);
 }
 
 BigDecimal::BigDecimal(double value) {
@@ -49,6 +50,7 @@ BigDecimal::BigDecimal(double value) {
     exponent = BigInteger(exp);
     significand = BigInteger(sig);
     significand.set_sign(bytes_array[7] >> 7);
+    normalize(*this);
 }
 
 BigDecimal::BigDecimal(std::string str) {
@@ -78,6 +80,8 @@ BigDecimal::BigDecimal(std::string str) {
     }
     if(sign)
         significand.set_sign(true);
+
+    normalize(*this);
 }
 
 // OPERATORS
@@ -153,22 +157,27 @@ BigDecimal BigDecimal::operator*(const BigDecimal& b) {
 }
 
 BigDecimal BigDecimal::operator/(const BigDecimal& b) {
-    BigDecimal new_decimal = *this;
+    //BigDecimal new_decimal = *this;
+    //new_decimal.divide(b, 32, 00);
+    //   if(new_decimal.significand < b.significand) {
+    //       while(new_decimal.significand < b.significand) {
+    //           new_decimal.significand = new_decimal.significand * BigInteger(2);
+    //           new_decimal.exponent = new_decimal.exponent - BigInteger(1);
+    //       }
+    //   }
 
-    if(new_decimal.significand < b.significand) {
-        while(new_decimal.significand < b.significand) {
-            new_decimal.significand = new_decimal.significand << 1;
-            new_decimal.exponent = new_decimal.exponent - BigInteger(1);
-        }
-    }
+    // for(auto i = 0; i < 256; i++) {
+    //       new_decimal.significand = new_decimal.significand * BigInteger(2);
+    //       new_decimal.exponent = new_decimal.exponent - BigInteger(1);
+    //}
 
-    new_decimal.significand = new_decimal.significand / b.significand;
-    new_decimal.exponent = new_decimal.exponent - b.exponent;
+    //   new_decimal.significand = new_decimal.significand / b.significand;
+    //   new_decimal.exponent = new_decimal.exponent - b.exponent;
 
-    //std::cout << "SIG: " << new_decimal.significand.to_string() << "\n";
+    //   //std::cout << "SIG: " << new_decimal.significand.to_string() << "\n";
 
-    normalize(new_decimal);
-    return new_decimal;
+    //   normalize(new_decimal);
+    return this->divide(b, 32, 00);
 }
 
 // OTHER FUNCTIONS
@@ -236,6 +245,44 @@ void BigDecimal::normalize(BigDecimal& b) {
             b.significand = b.significand / BigInteger(2);
             b.exponent = b.exponent + BigInteger(1);
         }
+}
+
+BigDecimal BigDecimal::divide(const BigDecimal& b, uint64_t precision, char roundigMode) {
+    if(significand == 0)
+        return BigDecimal("0.0");
+
+    BigDecimal new_decimal = *this;
+
+    auto precA = new_decimal.significand.size() * 32 - new_decimal.significand.nlz();
+    auto precB = b.significand.size() * 32 - b.significand.nlz();
+
+    // *4, bo jedna cyfra hex kodowana przez 4 cyfry bin
+    // +2 bity RS
+    auto desiredPrec = precision * 4 + precB - 1;
+    auto newPrec = desiredPrec - precA;
+
+    for(auto i = 0; i < newPrec; i++) {
+        new_decimal.significand = new_decimal.significand * BigInteger(2);
+        new_decimal.exponent = new_decimal.exponent - BigInteger(1);
+    }
+    new_decimal.exponent = new_decimal.exponent - b.exponent;
+
+    auto remainder = new_decimal.significand.divide(b.significand);
+    remainder = remainder << 2;
+    remainder.divide(b.significand);
+
+    if(remainder[0] == 3)
+        new_decimal.significand = new_decimal.significand + BigInteger(1);
+    else if(remainder[0] == 2) {
+        if(new_decimal.significand[0] % 2)
+            new_decimal.significand = new_decimal.significand + BigInteger(1);
+    }
+
+    normalize(new_decimal);
+    return new_decimal;
+}
+
+void applyRounding() {
 }
 
 } // namespace oiak

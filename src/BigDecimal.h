@@ -24,9 +24,13 @@ public:
     BigDecimal operator*(const BigDecimal&);
     BigDecimal operator/(const BigDecimal&);
 
+	// TODO enum
+    BigDecimal divide(const BigDecimal&, uint64_t precision, char roundigMode);
+
     bool get_sign() const;
     std::string to_string();
     std::string to_exponential_notation();
+    
 
 private:
     void normalize(BigDecimal& b);

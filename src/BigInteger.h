@@ -35,10 +35,11 @@ public:
     // bool operator<=(const BigInteger&) const;
     // bool operator>=(const BigInteger&) const;
     bool operator==(const BigInteger&) const;
-
+    BigInteger divide(const BigInteger& b);
     void set_sign(bool);
     bool get_sign() const;
     std::size_t size() const;
+    std::uint8_t nlz() const;
 
     std::string to_string();
 
@@ -48,6 +49,6 @@ private:
     // Storage must be greater than subtracted parameter s2
     std::vector<std::uint32_t> subtract(const std::vector<std::uint32_t>& s1, const std::vector<std::uint32_t>& s2);
     bool divmnu(std::vector<std::uint32_t>& q, std::vector<std::uint32_t>& r, const std::vector<std::uint32_t> u, const std::vector<std::uint32_t> v);
-    std::uint8_t nlz(std::uint32_t);
+    std::uint8_t nlz(const std::uint32_t) const;
 };
 } // namespace oiak
