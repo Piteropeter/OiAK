@@ -160,6 +160,55 @@ BigDecimal BigDecimal::operator/(const BigDecimal& b) {
     return this->divide(b, 32, Round::symetric_even);
 }
 
+BigDecimal BigDecimal::divide(const BigDecimal& b, BigInteger precision, Round roundigMode = Round::symetric_even) {
+    if(significand == 0)
+        return BigDecimal("0.0");
+    BigInteger one = BigInteger(1);
+    BigDecimal new_decimal = *this;
+
+    auto precA = new_decimal.significand.size() * 32 - new_decimal.significand.nlz();
+    auto precB = b.significand.size() * 32 - b.significand.nlz();
+
+    // *4, bo jedna cyfra hex kodowana przez 4 cyfry bin
+    auto desiredPrec = precision * 4 + precB - 1;
+    auto newPrec = desiredPrec - precA;
+
+    for(auto i = BigInteger(0); i < newPrec; i = i + one) {
+        new_decimal.significand = new_decimal.significand * BigInteger(2);
+        new_decimal.exponent = new_decimal.exponent - one;
+    }
+    new_decimal.exponent = new_decimal.exponent - b.exponent;
+
+    auto remainder = new_decimal.significand.divide(b.significand);
+    remainder = remainder << 2;
+    remainder = remainder / b.significand;
+
+    switch(roundigMode) {
+    case Round::ceil:
+        if(!new_decimal.get_sign())
+            new_decimal.significand = new_decimal.significand + one;
+        break;
+    case Round::floor:
+        if(new_decimal.get_sign())
+            new_decimal.significand = new_decimal.significand - one;
+        break;
+    case Round::symetric_even:
+        if(remainder[0] == 3)
+            new_decimal.significand = new_decimal.significand + BigInteger(1);
+        else if(remainder[0] == 2) {
+            if(new_decimal.significand[0] % 2)
+                new_decimal.significand = new_decimal.significand + BigInteger(1);
+        }
+        break;
+    case Round::cut:
+    defeault:
+        break;
+    }
+
+    normalize(new_decimal);
+    return new_decimal;
+}
+
 // OTHER FUNCTIONS
 
 bool BigDecimal::get_sign() const {
@@ -217,6 +266,12 @@ std::string BigDecimal::to_exponential_notation() {
     return ss.str();
 }
 
+std::string BigDecimal::to_scientific_notation(){
+    std::stringstream ss;
+    ss << significand.to_string() << "E" << (exponent/4).to_string();
+    return ss.str();
+};
+
 void BigDecimal::normalize(BigDecimal& b) {
     if(b.significand.size() == 1 && b.significand[0] == 0)
         b.exponent = BigInteger(0);
@@ -225,58 +280,6 @@ void BigDecimal::normalize(BigDecimal& b) {
             b.significand = b.significand / BigInteger(2);
             b.exponent = b.exponent + BigInteger(1);
         }
-}
-
-BigDecimal BigDecimal::divide(const BigDecimal& b, BigInteger precision, Round roundigMode = Round::symetric_even) {
-    if(significand == 0)
-        return BigDecimal("0.0");
-    BigInteger one = BigInteger(1);
-    BigDecimal new_decimal = *this;
-
-    auto precA = new_decimal.significand.size() * 32 - new_decimal.significand.nlz();
-    auto precB = b.significand.size() * 32 - b.significand.nlz();
-
-    // *4, bo jedna cyfra hex kodowana przez 4 cyfry bin
-    auto desiredPrec = precision * 4 + precB - 1;
-    auto newPrec = desiredPrec - precA;
-
-    for(auto i = BigInteger(0); i < newPrec; i = i + one) {
-        new_decimal.significand = new_decimal.significand * BigInteger(2);
-        new_decimal.exponent = new_decimal.exponent - one;
-    }
-    new_decimal.exponent = new_decimal.exponent - b.exponent;
-
-    auto remainder = new_decimal.significand.divide(b.significand);
-    remainder = remainder << 2;
-    remainder = remainder / b.significand;
-
-    switch(roundigMode) {
-    case Round::ceil:
-        if(!new_decimal.get_sign())
-            new_decimal.significand = new_decimal.significand + one;
-        break;
-    case Round::floor:
-        if(new_decimal.get_sign())
-            new_decimal.significand = new_decimal.significand - one;
-        break;
-    case Round::symetric_even:
-        if(remainder[0] == 3)
-            new_decimal.significand = new_decimal.significand + BigInteger(1);
-        else if(remainder[0] == 2) {
-            if(new_decimal.significand[0] % 2)
-                new_decimal.significand = new_decimal.significand + BigInteger(1);
-        }
-        break;
-    case Round::cut:
-	defeault:
-        break;
-    }
-   
-    normalize(new_decimal);
-    return new_decimal;
-}
-
-void applyRounding() {
 }
 
 } // namespace oiak

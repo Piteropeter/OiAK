@@ -189,6 +189,7 @@ TEST(big_decimal_operator_tests, div_test_round_ceil_2) {
     auto y = BigDecimal("cf00");
     x = x.divide(y, 5, Round::ceil);
     EXPECT_EQ(x.to_string(), "-0.72251");
+    EXPECT_EQ(x.to_scientific_notation(), "-72251E-5");
 }
 
 /// OTHER OPERATORS

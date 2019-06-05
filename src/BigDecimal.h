@@ -35,6 +35,7 @@ public:
     bool get_sign() const;
     std::string to_string();
     std::string to_exponential_notation();
+    std::string to_scientific_notation();
     
 
 private:
