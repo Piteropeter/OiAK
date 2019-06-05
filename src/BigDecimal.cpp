@@ -180,7 +180,7 @@ BigDecimal BigDecimal::divide(const BigDecimal& b, BigInteger precision, Round r
     new_decimal.exponent = new_decimal.exponent - b.exponent;
 
     auto remainder = new_decimal.significand.divide(b.significand);
-    remainder = remainder << 2;
+    remainder = remainder * BigInteger(4);
     remainder = remainder / b.significand;
 
     switch(roundigMode) {
