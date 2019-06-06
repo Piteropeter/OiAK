@@ -12,7 +12,7 @@ class BigDecimal {
     BigInteger exponent;
 
 public:
-	enum class Round { symetric_even, floor, ceil, cut };
+    enum class Round { symetric_even, floor, ceil, cut };
 
     BigDecimal() = default;
     BigDecimal(BigInteger significand, BigInteger exponent, bool sign = false);

@@ -10,7 +10,7 @@ namespace oiak {
 class BigDecimal;
 
 class BigInteger {
-	friend BigDecimal;
+    friend BigDecimal;
 
     bool sign = false;
     std::vector<std::uint32_t> storage = std::vector<std::uint32_t>(1, 0);
@@ -40,8 +40,8 @@ public:
     std::string to_string();
 
 private:
-	void set_sign(bool);
-	BigInteger divide(const BigInteger& b);
+    void set_sign(bool);
+    BigInteger divide(const BigInteger& b);
     int compareStorage(const std::vector<std::uint32_t>& s1, const std::vector<std::uint32_t>& s2) const;
     std::vector<std::uint32_t> add(const std::vector<std::uint32_t>& s1, const std::vector<std::uint32_t>& s2);
     std::vector<std::uint32_t> subtract(const std::vector<std::uint32_t>& s1, const std::vector<std::uint32_t>& s2);

@@ -157,7 +157,7 @@ BigDecimal BigDecimal::operator*(const BigDecimal& b) {
 }
 
 BigDecimal BigDecimal::operator/(const BigDecimal& b) {
-    return this->divide(b, BigInteger(32), Round::symetric_even);
+    return this->divide(b, BigInteger(64), Round::symetric_even);
 }
 
 BigDecimal BigDecimal::divide(const BigDecimal& b, BigInteger precision, BigDecimal::Round roundigMode) {
@@ -180,8 +180,17 @@ BigDecimal BigDecimal::divide(const BigDecimal& b, BigInteger precision, BigDeci
     new_decimal.exponent = new_decimal.exponent - b.exponent;
 
     auto remainder = new_decimal.significand.divide(b.significand);
-    remainder = remainder * BigInteger(4);
+
+    for(auto i = BigInteger(0); i < 32; i = i + one) {
+        remainder = remainder * BigInteger(2);
+    }
+
     remainder = remainder / b.significand;
+
+    std::uint32_t rs = remainder[remainder.size() - 1] << (remainder.nlz(remainder.storage.back()) / 4);
+    std::uint32_t r = static_cast<std::uint64_t>(rs) >> 31 << 1;
+    std::uint32_t s = (rs & 0x7FFFFFFFFFFFFFF) != 0 ? 1 : 0;
+    rs = r + s;
 
     switch(roundigMode) {
     case Round::ceil:
@@ -193,15 +202,15 @@ BigDecimal BigDecimal::divide(const BigDecimal& b, BigInteger precision, BigDeci
             new_decimal.significand = new_decimal.significand - one;
         break;
     case Round::symetric_even:
-        if(remainder[0] == 3)
+        if(rs == 3)
             new_decimal.significand = new_decimal.significand + BigInteger(1);
-        else if(remainder[0] == 2) {
+        else if(rs == 2) {
             if(new_decimal.significand[0] % 2)
                 new_decimal.significand = new_decimal.significand + BigInteger(1);
         }
         break;
     case Round::cut:
-		break;
+        break;
     default:
         break;
     }
@@ -241,10 +250,10 @@ std::string BigDecimal::to_string() {
             ss << "0." << basic_string;
         } else {
             basic_string.insert(basic_string.begin() + (basic_string.size() - offset), '.');
-			if(basic_string[0] == '.')
-				basic_string.insert(basic_string.begin(), '0');
-			if(basic_string[0] == '-' && basic_string[1] == '.')
-				basic_string.insert(basic_string.begin() + 1, '0');
+            if(basic_string[0] == '.')
+                basic_string.insert(basic_string.begin(), '0');
+            if(basic_string[0] == '-' && basic_string[1] == '.')
+                basic_string.insert(basic_string.begin() + 1, '0');
             ss << basic_string;
         }
     } else if(exponent > BigInteger(0)) {
