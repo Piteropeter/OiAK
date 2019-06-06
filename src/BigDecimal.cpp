@@ -164,6 +164,7 @@ BigDecimal BigDecimal::divide(const BigDecimal& b, BigInteger precision, Round r
     if(significand == 0)
         return BigDecimal("0.0");
     BigInteger one = BigInteger(1);
+
     BigDecimal new_decimal = *this;
 
     auto precA = new_decimal.significand.size() * 32 - new_decimal.significand.nlz();
@@ -180,17 +181,7 @@ BigDecimal BigDecimal::divide(const BigDecimal& b, BigInteger precision, Round r
     new_decimal.exponent = new_decimal.exponent - b.exponent;
 
     auto remainder = new_decimal.significand.divide(b.significand);
-
-	for(auto i = BigInteger(0); i < 32; i = i + one) {
-        remainder = remainder * BigInteger(2);
-    }
-
-    remainder = remainder / b.significand;
-
-	std::uint32_t rs = remainder[remainder.size() - 1] << (remainder.nlz()/4);
-    std::uint32_t r = static_cast<std::uint64_t>(rs) >> 31 << 1;
-    std::uint32_t s = (rs & 0x7FFFFFFFFFFFFFF) != 0 ? 1 : 0;
-    rs = r + s;
+    std::uint32_t rs, r, s;
 
     switch(roundigMode) {
     case Round::ceil:
@@ -202,6 +193,17 @@ BigDecimal BigDecimal::divide(const BigDecimal& b, BigInteger precision, Round r
             new_decimal.significand = new_decimal.significand - one;
         break;
     case Round::symetric_even:
+        for(auto i = BigInteger(0); i < 32; i = i + one) {
+            remainder = remainder * BigInteger(2);
+        }
+
+        remainder = remainder / b.significand;
+
+        rs = remainder[remainder.size() - 1] << (remainder.nlz() / 4);
+        r = static_cast<std::uint64_t>(rs) >> 31 << 1;
+        s = (rs & 0x7FFFFFFFFFFFFFF) != 0 ? 1 : 0;
+        rs = r + s;
+
         if(rs == 3)
             new_decimal.significand = new_decimal.significand + BigInteger(1);
         else if(rs == 2) {
