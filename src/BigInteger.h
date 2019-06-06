@@ -7,10 +7,10 @@
 
 namespace oiak {
 
-class BigDecimal;
+class BigFloat;
 
 class BigInteger {
-    friend BigDecimal;
+    friend BigFloat;
 
     bool sign = false;
     std::vector<std::uint32_t> storage = std::vector<std::uint32_t>(1, 0);

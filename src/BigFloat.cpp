@@ -1,18 +1,18 @@
 #include "BigInteger.h"
-#include "BigDecimal.h"
+#include "BigFloat.h"
 
 namespace oiak {
 
 // CONSTRUCTORS
 
-BigDecimal::BigDecimal(BigInteger significand, BigInteger exponent, bool sign) {
+BigFloat::BigFloat(BigInteger significand, BigInteger exponent, bool sign) {
     this->significand = significand;
     this->exponent = exponent;
     this->significand.set_sign(sign);
     normalize(*this);
 }
 
-BigDecimal::BigDecimal(double value) {
+BigFloat::BigFloat(double value) {
     static_assert(sizeof(double) == 8, "Double is not 8 bytes!");
 
     if(std::isinf(value) || std::isnan(value))
@@ -53,7 +53,7 @@ BigDecimal::BigDecimal(double value) {
     normalize(*this);
 }
 
-BigDecimal::BigDecimal(std::string str) {
+BigFloat::BigFloat(std::string str) {
     bool sign = false;
     if(str[0] == '-') {
         sign = true;
@@ -86,87 +86,87 @@ BigDecimal::BigDecimal(std::string str) {
 
 // OPERATORS
 
-BigDecimal& BigDecimal::operator=(const BigDecimal& b) {
+BigFloat& BigFloat::operator=(const BigFloat& b) {
     significand = b.significand;
     exponent = b.exponent;
     return *this;
 }
 
-BigDecimal BigDecimal::operator+(const BigDecimal& b) {
-    BigDecimal new_decimal = *this;
-    BigDecimal temp;
+BigFloat BigFloat::operator+(const BigFloat& b) {
+    BigFloat new_big_float = *this;
+    BigFloat temp;
 
-    if(new_decimal.exponent > b.exponent) {
-        while(new_decimal.exponent > b.exponent) {
-            new_decimal.significand = new_decimal.significand * BigInteger(2);
-            new_decimal.exponent = new_decimal.exponent - BigInteger(1);
+    if(new_big_float.exponent > b.exponent) {
+        while(new_big_float.exponent > b.exponent) {
+            new_big_float.significand = new_big_float.significand * BigInteger(2);
+            new_big_float.exponent = new_big_float.exponent - BigInteger(1);
         }
 
-        new_decimal.significand = new_decimal.significand + b.significand;
-    } else if(new_decimal.exponent < b.exponent) {
+        new_big_float.significand = new_big_float.significand + b.significand;
+    } else if(new_big_float.exponent < b.exponent) {
         temp = b;
-        while(new_decimal.exponent < temp.exponent) {
+        while(new_big_float.exponent < temp.exponent) {
             temp.significand = temp.significand * BigInteger(2);
             temp.exponent = temp.exponent - BigInteger(1);
         }
 
-        new_decimal.significand = new_decimal.significand + temp.significand;
+        new_big_float.significand = new_big_float.significand + temp.significand;
     } else {
-        new_decimal.significand = new_decimal.significand + b.significand;
+        new_big_float.significand = new_big_float.significand + b.significand;
     }
 
-    normalize(new_decimal);
-    return new_decimal;
+    normalize(new_big_float);
+    return new_big_float;
 }
 
-BigDecimal BigDecimal::operator-(const BigDecimal& b) {
-    BigDecimal new_decimal = *this;
-    BigDecimal temp;
+BigFloat BigFloat::operator-(const BigFloat& b) {
+    BigFloat new_big_float = *this;
+    BigFloat temp;
 
-    if(new_decimal.exponent > b.exponent) {
-        while(new_decimal.exponent > b.exponent) {
-            new_decimal.significand = new_decimal.significand * BigInteger(2);
-            new_decimal.exponent = new_decimal.exponent - BigInteger(1);
+    if(new_big_float.exponent > b.exponent) {
+        while(new_big_float.exponent > b.exponent) {
+            new_big_float.significand = new_big_float.significand * BigInteger(2);
+            new_big_float.exponent = new_big_float.exponent - BigInteger(1);
         }
 
-        new_decimal.significand = new_decimal.significand - b.significand;
-    } else if(new_decimal.exponent < b.exponent) {
+        new_big_float.significand = new_big_float.significand - b.significand;
+    } else if(new_big_float.exponent < b.exponent) {
         temp = b;
-        while(new_decimal.exponent < temp.exponent) {
+        while(new_big_float.exponent < temp.exponent) {
             temp.significand = temp.significand * BigInteger(2);
             temp.exponent = temp.exponent - BigInteger(1);
         }
 
-        new_decimal.significand = new_decimal.significand - temp.significand;
+        new_big_float.significand = new_big_float.significand - temp.significand;
     } else {
-        new_decimal.significand = new_decimal.significand - b.significand;
+        new_big_float.significand = new_big_float.significand - b.significand;
     }
 
-    normalize(new_decimal);
-    return new_decimal;
+    normalize(new_big_float);
+    return new_big_float;
 }
 
-BigDecimal BigDecimal::operator*(const BigDecimal& b) {
-    BigDecimal new_decimal = *this;
+BigFloat BigFloat::operator*(const BigFloat& b) {
+    BigFloat new_big_float = *this;
 
-    new_decimal.significand = new_decimal.significand * b.significand;
-    new_decimal.exponent = new_decimal.exponent + b.exponent;
+    new_big_float.significand = new_big_float.significand * b.significand;
+    new_big_float.exponent = new_big_float.exponent + b.exponent;
 
-    normalize(new_decimal);
-    return new_decimal;
+    normalize(new_big_float);
+    return new_big_float;
 }
 
-BigDecimal BigDecimal::operator/(const BigDecimal& b) {
+BigFloat BigFloat::operator/(const BigFloat& b) {
     return this->divide(b, BigInteger(64), Round::symetric_even);
 }
 
-BigDecimal BigDecimal::divide(const BigDecimal& b, BigInteger precision, BigDecimal::Round roundigMode) {
+BigFloat BigFloat::divide(const BigFloat& b, BigInteger precision, BigFloat::Round roundigMode) {
     if(significand == 0)
-        return BigDecimal("0.0");
+        return BigFloat("0.0");
     BigInteger one = BigInteger(1);
-    BigDecimal new_decimal = *this;
+    BigFloat new_big_float = *this;
 
-    auto precA = new_decimal.significand.size() * 32 - new_decimal.significand.nlz(new_decimal.significand.storage.back());
+    auto precA = new_big_float.significand.size() * 32 - new_big_float.significand.nlz(new_big_float.significand.storage.back());
     auto precB = b.significand.size() * 32 - b.significand.nlz(b.significand.storage.back());
 
     // * 4, bo jedna cyfra hex kodowana przez 4 cyfry bin
@@ -174,39 +174,41 @@ BigDecimal BigDecimal::divide(const BigDecimal& b, BigInteger precision, BigDeci
     auto newPrec = desiredPrec - precA;
 
     for(auto i = BigInteger(0); i < newPrec; i = i + one) {
-        new_decimal.significand = new_decimal.significand * BigInteger(2);
-        new_decimal.exponent = new_decimal.exponent - one;
+        new_big_float.significand = new_big_float.significand * BigInteger(2);
+        new_big_float.exponent = new_big_float.exponent - one;
     }
-    new_decimal.exponent = new_decimal.exponent - b.exponent;
+    new_big_float.exponent = new_big_float.exponent - b.exponent;
 
-    auto remainder = new_decimal.significand.divide(b.significand);
+    auto remainder = new_big_float.significand.divide(b.significand);
 
-    for(auto i = BigInteger(0); i < 32; i = i + one) {
-        remainder = remainder * BigInteger(2);
-    }
-
-    remainder = remainder / b.significand;
-
-    std::uint32_t rs = remainder[remainder.size() - 1] << (remainder.nlz(remainder.storage.back()) / 4);
-    std::uint32_t r = static_cast<std::uint64_t>(rs) >> 31 << 1;
-    std::uint32_t s = (rs & 0x7FFFFFFFFFFFFFF) != 0 ? 1 : 0;
-    rs = r + s;
+    std::uint32_t rs, r, s;
 
     switch(roundigMode) {
     case Round::ceil:
-        if(!new_decimal.get_sign())
-            new_decimal.significand = new_decimal.significand + one;
+        if(!new_big_float.get_sign())
+            new_big_float.significand = new_big_float.significand + one;
         break;
     case Round::floor:
-        if(new_decimal.get_sign())
-            new_decimal.significand = new_decimal.significand - one;
+        if(new_big_float.get_sign())
+            new_big_float.significand = new_big_float.significand - one;
         break;
     case Round::symetric_even:
+        for(auto i = BigInteger(0); i < 32; i = i + one) {
+            remainder = remainder * BigInteger(2);
+        }
+
+        remainder = remainder / b.significand;
+
+        rs = remainder[remainder.size() - 1] << (remainder.nlz(remainder.storage.back()) / 4);
+        r = static_cast<std::uint64_t>(rs) >> 31 << 1;
+        s = (rs & 0x7FFFFFFFFFFFFFF) != 0 ? 1 : 0;
+        rs = r + s;
+
         if(rs == 3)
-            new_decimal.significand = new_decimal.significand + BigInteger(1);
+            new_big_float.significand = new_big_float.significand + BigInteger(1);
         else if(rs == 2) {
-            if(new_decimal.significand[0] % 2)
-                new_decimal.significand = new_decimal.significand + BigInteger(1);
+            if(new_big_float.significand[0] % 2)
+                new_big_float.significand = new_big_float.significand + BigInteger(1);
         }
         break;
     case Round::cut:
@@ -215,17 +217,17 @@ BigDecimal BigDecimal::divide(const BigDecimal& b, BigInteger precision, BigDeci
         break;
     }
 
-    normalize(new_decimal);
-    return new_decimal;
+    normalize(new_big_float);
+    return new_big_float;
 }
 
 // OTHER FUNCTIONS
 
-bool BigDecimal::get_sign() const {
+bool BigFloat::get_sign() const {
     return significand.get_sign();
 }
 
-std::string BigDecimal::to_string() {
+std::string BigFloat::to_string() {
     std::stringstream ss;
     BigInteger significand = this->significand;
     BigInteger exponent = this->exponent;
@@ -274,13 +276,13 @@ std::string BigDecimal::to_string() {
     return ss.str();
 }
 
-std::string BigDecimal::to_exponential_notation() {
+std::string BigFloat::to_exponential_notation() {
     std::stringstream ss;
     ss << significand.to_string() << " * 2 ^ " << exponent.to_string();
     return ss.str();
 }
 
-void BigDecimal::normalize(BigDecimal& b) {
+void BigFloat::normalize(BigFloat& b) {
     if(b.significand.size() == 1 && b.significand[0] == 0)
         b.exponent = BigInteger(0);
     else
