@@ -35,4 +35,6 @@
 build/*
 .vs/
 CppProperties.json
-
+build/
+zbuild/
+vcpkg/

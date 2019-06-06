@@ -1,5 +1,3 @@
-#define max(x, y) ((x) > (y) ? (x) : (y))
-
 #include "BigInteger.h"
 
 namespace oiak {
@@ -103,12 +101,11 @@ BigInteger& BigInteger::operator=(const BigInteger& b) {
 
 BigInteger BigInteger::operator+(const BigInteger& b) {
     BigInteger new_integer = *this;
-    if((!sign && !b.sign) || (sign && b.sign)) {
+    if((!new_integer.sign && !b.sign) || (new_integer.sign && b.sign)) {
         new_integer.storage = add(new_integer.storage, b.storage);
         return new_integer;
     }
 
-    // Zero! Mo¿e zmiana reprezentacji znaku dla ³atwiejszej obs³ugi?
     auto cmp = compareStorage(new_integer.storage, b.storage);
     if(cmp == 0) {
         new_integer.storage.clear();
@@ -156,7 +153,7 @@ BigInteger BigInteger::operator*(const BigInteger& b) {
 
     for(auto i = 0u; i < new_integer.storage.size(); i++) {
         for(auto j = 0u; j < b.storage.size(); j++) {
-            tmp[i + j] += static_cast<std::uint64_t>(storage[i]) * static_cast<std::uint64_t>(b.storage[j]);
+            tmp[i + j] += static_cast<std::uint64_t>(new_integer.storage[i]) * static_cast<std::uint64_t>(b.storage[j]);
             if(tmp[i + j] > UINT32_MAX) {
                 tmp[i + j + 1] += tmp[i + j] >> 32;
                 tmp[i + j] = tmp[i + j] << 32 >> 32;
@@ -180,79 +177,8 @@ BigInteger BigInteger::operator*(const BigInteger& b) {
 
 BigInteger BigInteger::operator/(const BigInteger& b) {
     BigInteger new_integer = *this;
-    int m = storage.size();
-    int n = b.storage.size();
-
-    auto quotient = std::vector<std::uint32_t>(m - n + 1);
-    auto r = std::vector<std::uint32_t>(n);
-
-    if(divmnu(quotient, r, new_integer.storage, b.storage)) {
-        // TODO EXCEPTION THROW
-        return new_integer;
-    }
-
-    new_integer.storage = quotient;
-    new_integer.sign = (new_integer.sign || b.sign) && !(new_integer.sign && b.sign);
-
+    new_integer.divide(b);
     return new_integer;
-}
-
-BigInteger BigInteger::operator<<(std::uint64_t shift) {
-    if(shift == 0)
-        return *this;
-
-    BigInteger newInt = *this;
-
-    auto leftShift = shift % 32;
-    auto rightShift = 32 - leftShift;
-
-    auto additionalSpace = 0;
-
-    if(nlz(storage.back()) < shift)
-        additionalSpace = ((shift - 1) / 32) + 1;
-
-    auto storeSize = storage.size() + additionalSpace;
-    auto store = std::vector<std::uint32_t>(storeSize);
-
-    auto storageInd = storage.size();
-
-    while(storageInd > 1) {
-        auto l = static_cast<std::uint64_t>(storage[--storageInd]) << leftShift;
-        auto r = storage[storageInd - 1] >> rightShift;
-        store[--storeSize] = l | r;
-    }
-
-    store[storeSize - storageInd] = storage[0] << leftShift;
-
-    normalize(store);
-    newInt.storage = store;
-    return newInt;
-}
-
-BigInteger BigInteger::operator>>(std::uint64_t shift) {
-    if(shift == 0)
-        return *this;
-
-    BigInteger newInt = *this;
-
-    auto rightShift = shift % 32;
-    auto leftShift = 32 - rightShift;
-
-    auto store = std::vector<std::uint32_t>(storage.size());
-
-    auto storeSize = store.size() - 1;
-    auto storageInd = storage.size() - 1;
-
-	store[storeSize--] = static_cast<std::uint64_t>(storage[storageInd]) >> rightShift;
-    while(storageInd > 0) {
-        auto l = static_cast<std::uint64_t>(storage[storageInd]) << leftShift;
-        auto r = storage[--storageInd] >> rightShift;
-        store[storeSize--] = l | r;
-    }
-
-    normalize(store);
-    newInt.storage = store;
-    return newInt;
 }
 
 bool BigInteger::operator<(const BigInteger& b) const {
@@ -307,6 +233,24 @@ bool BigInteger::operator==(const BigInteger& b) const {
         return true;
     } else
         return false;
+}
+
+// Alters left operand. Returns remainder as new BigInteger.
+BigInteger BigInteger::divide(const BigInteger& b) {
+
+    std::uint64_t m = storage.size();
+    std::uint64_t n = b.storage.size();
+
+    auto quotient = std::vector<std::uint32_t>(m - n + 1);
+    auto r = std::vector<std::uint32_t>(n);
+
+    divmnu(quotient, r, storage, b.storage);
+
+    normalize(quotient);
+    storage = quotient;
+    sign = (sign || b.sign) && !(sign && b.sign);
+
+    return BigInteger(r);
 }
 
 // OTHER FUNCTIONS
@@ -414,6 +358,7 @@ std::vector<std::uint32_t> BigInteger::add(const std::vector<std::uint32_t>& s1,
 
     return result;
 }
+
 // Assumes s2 smaller than this.storage
 std::vector<std::uint32_t> BigInteger::subtract(const std::vector<std::uint32_t>& s1, const std::vector<std::uint32_t>& s2) {
     std::int64_t tmp = 0;
@@ -445,7 +390,7 @@ std::vector<std::uint32_t> BigInteger::subtract(const std::vector<std::uint32_t>
     return result;
 }
 
-std::uint8_t BigInteger::nlz(std::uint32_t x) {
+std::uint8_t BigInteger::nlz(std::uint32_t x) const {
     int n;
 
     if(x == 0)
@@ -473,61 +418,40 @@ std::uint8_t BigInteger::nlz(std::uint32_t x) {
     return n;
 }
 
-/* q[0], r[0], u[0], and v[0] contain the LEAST significant words.
-(The sequence is in little-endian order).
-
-This is a fairly precise implementation of Knuth's Algorithm D, for a
-binary computer with base b = 2**32. The caller supplies:
-   1. Space q for the quotient, m - n + 1 words (at least one).
-   2. Space r for the remainder (optional), n words.
-   3. The dividend u, m words, m >= 1.
-   4. The divisor v, n words, <probably wrong> --> n >= 2.
-The most significant digit of the divisor, v[n-1], must be nonzero.  The
-dividend u may have leading zeros; this just makes the algorithm take
-longer and makes the quotient contain more leading zeros.  A value of
-NULL may be given for the address of the remainder to signify that the
-caller does not want the remainder.
-   The program does not alter the input parameters u and v.
-   The quotient and remainder returned may have leading zeros.  The
-function itself returns a value of 0 for success and 1 for invalid
-parameters (e.g., division by 0).
-   For now, we must have m >= n.  Knuth's Algorithm D also requires
-that the dividend be at least as long as the divisor.  (In his terms,
-m >= 0 (unstated).  Therefore m+n >= n.) */
-
-void NewFunction(uint64_t& quotDigit, const uint64_t& b, std::vector<uint32_t>& normalDivisor, const size_t& divisorLen,
-                 uint64_t& remainderDigit, std::vector<uint32_t>& normalDividend, const int32_t& j) {
-    // again:
+void divmnu_helper_recursive(uint64_t& quotDigit, const uint64_t& b, std::vector<uint32_t>& normalDivisor, const size_t& divisorLen,
+                             uint64_t& remainderDigit, std::vector<uint32_t>& normalDividend, const int32_t& j) {
     if(quotDigit >= b || quotDigit * normalDivisor[divisorLen - 2] > b * remainderDigit + normalDividend[j + divisorLen - 2]) {
         quotDigit = quotDigit - 1;
         remainderDigit = remainderDigit + normalDivisor[divisorLen - 1];
         if(remainderDigit < b)
-            NewFunction(quotDigit, b, normalDivisor, divisorLen, remainderDigit, normalDividend, j);
+            divmnu_helper_recursive(quotDigit, b, normalDivisor, divisorLen, remainderDigit, normalDividend, j);
     }
 }
 
+/*
+This is a fairly precise implementation of Knuth's Algorithm D, for a
+binary computer with base b = 2**32
+*/
 bool BigInteger::divmnu(std::vector<std::uint32_t>& quotient, std::vector<std::uint32_t>& remainder,
                         const std::vector<std::uint32_t> divident, const std::vector<std::uint32_t> divisor) {
 
     std::size_t dividentLen = divident.size();
     std::size_t divisorLen = divisor.size();
 
-    constexpr std::uint64_t b = 4294967296;                            // Number base (2**32).
-    auto normalDividend = std::vector<std::uint32_t>(dividentLen + 1); // Normalized dividend
-    auto normalDivisor = std::vector<std::uint32_t>(divisorLen);       // Normalized divisor.
-    std::uint64_t quotDigit;                                           // Estimated quotient digit.
-    std::uint64_t remainderDigit;                                      // A remainder.
-    std::uint64_t prodTwoDigits;                                       // Product of two digits.
+    constexpr std::uint64_t b = 4294967296;
+    auto normalDividend = std::vector<std::uint32_t>(dividentLen + 1);
+    auto normalDivisor = std::vector<std::uint32_t>(divisorLen);
+    std::uint64_t quotDigit, remainderDigit, prodTwoDigits;
     std::int64_t t, k;
     std::int32_t divisorShift, i, j;
 
     if(dividentLen < divisorLen || divisorLen <= 0 || divisor[divisorLen - 1] == 0)
-        return 1; // Return if invalid param.
+        return 1;
 
-    if(divisorLen == 1) {                                     // Take care of
-        k = 0;                                                // the case of a
-        for(j = dividentLen - 1; j >= 0; j--) {               // single-digit
-            quotient[j] = (k * b + divident[j]) / divisor[0]; // divisor here.
+    if(divisorLen == 1) {
+        k = 0;
+        for(j = dividentLen - 1; j >= 0; j--) {
+            quotient[j] = (k * b + divident[j]) / divisor[0];
             k = (k * b + divident[j]) - quotient[j] * divisor[0];
         }
         if(&remainder != NULL)
@@ -535,29 +459,22 @@ bool BigInteger::divmnu(std::vector<std::uint32_t>& quotient, std::vector<std::u
         return 0;
     }
 
-    /* Normalize by shifting dividend left just enough so that its high-order
-    bit is on, and shift divident left the same amount. We may have to append a
-    high-order digit on the dividend; we do that unconditionally. */
-
-    divisorShift = nlz(divisor[divisorLen - 1]); // 0 <= s <= 31.
+    divisorShift = nlz(divisor[divisorLen - 1]);
 
     for(i = divisorLen - 1; i > 0; i--)
         normalDivisor[i] = (divisor[i] << divisorShift) | (static_cast<std::uint64_t>(divisor[i - 1]) >> (32 - divisorShift));
     normalDivisor[0] = divisor[0] << divisorShift;
-
     normalDividend[dividentLen] = static_cast<std::uint64_t>(divident[dividentLen - 1]) >> (32 - divisorShift);
     for(i = dividentLen - 1; i > 0; i--)
         normalDividend[i] = (divident[i] << divisorShift) | (static_cast<std::uint64_t>(divident[i - 1]) >> (32 - divisorShift));
     normalDividend[0] = divident[0] << divisorShift;
 
-    for(j = dividentLen - divisorLen; j >= 0; j--) { // Main loop.
-        // Compute estimate quotientDigit of q[j].
+    for(j = dividentLen - divisorLen; j >= 0; j--) {
         quotDigit = (normalDividend[j + divisorLen] * b + normalDividend[j + divisorLen - 1]) / normalDivisor[divisorLen - 1];
         remainderDigit = (normalDividend[j + divisorLen] * b + normalDividend[j + divisorLen - 1]) - quotDigit * normalDivisor[divisorLen - 1];
 
-        NewFunction(quotDigit, b, normalDivisor, divisorLen, remainderDigit, normalDividend, j);
+        divmnu_helper_recursive(quotDigit, b, normalDivisor, divisorLen, remainderDigit, normalDividend, j);
 
-        // Multiply and subtract.
         k = 0;
         for(i = 0; i < divisorLen; i++) {
             prodTwoDigits = quotDigit * normalDivisor[i];
@@ -568,9 +485,9 @@ bool BigInteger::divmnu(std::vector<std::uint32_t>& quotient, std::vector<std::u
         t = normalDividend[j + divisorLen] - k;
         normalDividend[j + divisorLen] = t;
 
-        quotient[j] = quotDigit;           // Store quotient digit.
-        if(t < 0) {                        // If we subtracted too
-            quotient[j] = quotient[j] - 1; // much, add back.
+        quotient[j] = quotDigit;
+        if(t < 0) {
+            quotient[j] = quotient[j] - 1;
             k = 0;
             for(i = 0; i < divisorLen; i++) {
                 t = static_cast<std::uint64_t>(normalDividend[i + j]) + normalDivisor[i] + k;
@@ -579,9 +496,7 @@ bool BigInteger::divmnu(std::vector<std::uint32_t>& quotient, std::vector<std::u
             }
             normalDividend[j + divisorLen] = normalDividend[j + divisorLen] + k;
         }
-    } // End j.
-    // If the caller wants the remainder, unnormalize
-    // it and pass it back.
+    }
     if(&remainder != NULL) {
         for(i = 0u; i < divisorLen - 1; i++)
             remainder[i] = (normalDividend[i] >> divisorShift) | (static_cast<std::uint64_t>(normalDividend[i + 1]) << (32 - divisorShift));
@@ -589,5 +504,4 @@ bool BigInteger::divmnu(std::vector<std::uint32_t>& quotient, std::vector<std::u
     }
     return 0;
 }
-
 } // namespace oiak
