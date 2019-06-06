@@ -29,7 +29,6 @@ public:
     BigDecimal operator*(const BigDecimal&);
     BigDecimal operator/(const BigDecimal&);
 
-	// TODO enum
     BigDecimal divide(const BigDecimal&, BigInteger , Round );
 
     bool get_sign() const;

@@ -179,20 +179,7 @@ BigInteger BigInteger::operator*(const BigInteger& b) {
 
 BigInteger BigInteger::operator/(const BigInteger& b) {
     BigInteger new_integer = *this;
-    int m = storage.size();
-    int n = b.storage.size();
-
-    auto quotient = std::vector<std::uint32_t>(m - n + 1);
-    auto r = std::vector<std::uint32_t>(n);
-
-    if(divmnu(quotient, r, new_integer.storage, b.storage)) {
-        // TODO EXCEPTION THROW
-        return BigInteger("0");
-    }
-
-    new_integer.storage = quotient;
-    new_integer.sign = (new_integer.sign || b.sign) && !(new_integer.sign && b.sign);
-
+    new_integer.divide(b);
     return new_integer;
 }
 
@@ -316,6 +303,7 @@ BigInteger BigInteger::divide(const BigInteger& b) {
 
     divmnu(quotient, r, storage, b.storage);
 
+	normalize(quotient);
     storage = quotient;
     sign = (sign || b.sign) && !(sign && b.sign);
 
