@@ -7,7 +7,11 @@
 
 namespace oiak {
 
+class BigDecimal;
+
 class BigInteger {
+	friend BigDecimal;
+
     bool sign = false;
     std::vector<std::uint32_t> storage = std::vector<std::uint32_t>(1, 0);
 
@@ -28,27 +32,20 @@ public:
     BigInteger operator-(const BigInteger&);
     BigInteger operator*(const BigInteger&);
     BigInteger operator/(const BigInteger&);
-    BigInteger operator<<(std::uint64_t);
-    BigInteger operator>>(std::uint64_t);
     bool operator<(const BigInteger&) const;
     bool operator>(const BigInteger&) const;
-    // bool operator<=(const BigInteger&) const;
-    // bool operator>=(const BigInteger&) const;
     bool operator==(const BigInteger&) const;
-    BigInteger divide(const BigInteger& b);
-    void set_sign(bool);
     bool get_sign() const;
     std::size_t size() const;
-    std::uint8_t nlz() const;
-
     std::string to_string();
 
 private:
+	void set_sign(bool);
+	BigInteger divide(const BigInteger& b);
     int compareStorage(const std::vector<std::uint32_t>& s1, const std::vector<std::uint32_t>& s2) const;
     std::vector<std::uint32_t> add(const std::vector<std::uint32_t>& s1, const std::vector<std::uint32_t>& s2);
-    // Storage must be greater than subtracted parameter s2
     std::vector<std::uint32_t> subtract(const std::vector<std::uint32_t>& s1, const std::vector<std::uint32_t>& s2);
     bool divmnu(std::vector<std::uint32_t>& q, std::vector<std::uint32_t>& r, const std::vector<std::uint32_t> u, const std::vector<std::uint32_t> v);
-    std::uint8_t nlz(const std::uint32_t) const;
+    std::uint8_t nlz(std::uint32_t) const;
 };
 } // namespace oiak

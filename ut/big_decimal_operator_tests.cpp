@@ -77,6 +77,13 @@ TEST(big_decimal_operator_tests, different_exponents_subtraction) {
     EXPECT_EQ(x.to_string(), "122fff.fffedd");
 }
 
+TEST(big_decimal_operator_tests, same_exponents_subtraction) {
+    auto x = BigDecimal("0.000123");
+    auto y = BigDecimal("0.000122");
+    x = x - y;
+    EXPECT_EQ(x.to_string(), "0.000001");
+}
+
 /// MULTIPLYING
 
 TEST(big_decimal_operator_tests, basic_multiplying) {
@@ -91,6 +98,13 @@ TEST(big_decimal_operator_tests, different_exponents_multiplying) {
     auto y = BigDecimal("-0.123");
     x = x * y;
     EXPECT_EQ(x.to_string(), "-14ac9");
+}
+
+TEST(big_decimal_operator_tests, same_exponents_multiplying) {
+    auto x = BigDecimal("-0.01");
+    auto y = BigDecimal("-0.01");
+    x = x * y;
+    EXPECT_EQ(x.to_string(), "0.0001");
 }
 
 /// DIVIDING
@@ -110,10 +124,10 @@ TEST(big_decimal_operator_tests, different_exponents_dividing) {
 }
 
 TEST(big_decimal_operator_tests, div_test_2) {
-    auto x = BigDecimal("5c4c00");                              
-    auto y = BigDecimal("3"); 
-	x = x / y;
-	EXPECT_EQ(x.to_string(), "1ec400");
+    auto x = BigDecimal("5c4c00");
+    auto y = BigDecimal("3");
+    x = x / y;
+    EXPECT_EQ(x.to_string(), "1ec400");
 }
 
 TEST(big_decimal_operator_tests, div_test_3) {
@@ -126,70 +140,69 @@ TEST(big_decimal_operator_tests, div_test_3) {
 TEST(big_decimal_operator_tests, div_test_4) {
     auto x = BigDecimal("5c4c");
     auto y = BigDecimal("cf0");
-    x = x.divide(y,10,Round::symetric_even);
+    x = x.divide(y, 10, BigDecimal::Round::symetric_even);
     EXPECT_EQ(x.to_string(), "7.22519f894");
 }
 
 TEST(big_decimal_operator_tests, div_test_5) {
     auto x = BigDecimal("5c4c0");
     auto y = BigDecimal("cf0");
-    x = x.divide(y, 10, Round::symetric_even);
+    x = x.divide(y, 10, BigDecimal::Round::symetric_even);
     EXPECT_EQ(x.to_string(), "72.2519f894");
 }
 
 TEST(big_decimal_operator_tests, div_test_round_even) {
     auto x = BigDecimal("5c4c");
     auto y = BigDecimal("cf0");
-    x = x.divide(y, 5, Round::symetric_even);
+    x = x.divide(y, 5, BigDecimal::Round::symetric_even);
     EXPECT_EQ(x.to_string(), "7.2252");
 }
 
 TEST(big_decimal_operator_tests, div_test_round_even_2) {
     auto x = BigDecimal("5c4c");
     auto y = BigDecimal("cf00");
-    x = x.divide(y, 5, Round::symetric_even);
+    x = x.divide(y, 5, BigDecimal::Round::symetric_even);
     EXPECT_EQ(x.to_string(), "0.72252");
 }
 TEST(big_decimal_operator_tests, div_test_round_even_3) {
     auto x = BigDecimal("5c4c");
     auto y = BigDecimal("cf000");
-    x = x.divide(y, 5, Round::symetric_even);
+    x = x.divide(y, 5, BigDecimal::Round::symetric_even);
     EXPECT_EQ(x.to_string(), "0.072252");
 }
 TEST(big_decimal_operator_tests, div_test_round_cut) {
     auto x = BigDecimal("5c4c");
     auto y = BigDecimal("cf00");
-    x = x.divide(y, 5, Round::cut);
+    x = x.divide(y, 5, BigDecimal::Round::cut);
     EXPECT_EQ(x.to_string(), "0.72251");
 }
 
 TEST(big_decimal_operator_tests, div_test_round_floor) {
     auto x = BigDecimal("5c4c");
     auto y = BigDecimal("cf00");
-    x = x.divide(y, 5, Round::floor);
+    x = x.divide(y, 5, BigDecimal::Round::floor);
     EXPECT_EQ(x.to_string(), "0.72251");
 }
 
 TEST(big_decimal_operator_tests, div_test_round_floor_2) {
     auto x = BigDecimal("-5c4c");
     auto y = BigDecimal("cf00");
-    x = x.divide(y, 5, Round::floor);
+    x = x.divide(y, 5, BigDecimal::Round::floor);
     EXPECT_EQ(x.to_string(), "-0.72252");
 }
 
 TEST(big_decimal_operator_tests, div_test_round_ceil) {
     auto x = BigDecimal("5c4c");
     auto y = BigDecimal("cf00");
-    x = x.divide(y, 5, Round::ceil);
+    x = x.divide(y, 5, BigDecimal::Round::ceil);
     EXPECT_EQ(x.to_string(), "0.72252");
 }
 
 TEST(big_decimal_operator_tests, div_test_round_ceil_2) {
     auto x = BigDecimal("-5c4c");
     auto y = BigDecimal("cf00");
-    x = x.divide(y, 5, Round::ceil);
+    x = x.divide(y, 5, BigDecimal::Round::ceil);
     EXPECT_EQ(x.to_string(), "-0.72251");
-    EXPECT_EQ(x.to_scientific_notation(), "-72251E-5");
 }
 
 /// OTHER OPERATORS

@@ -75,7 +75,7 @@ BigDecimal::BigDecimal(std::string str) {
         exponent = BigInteger(0);
     }
     while(!(significand[0] % 2)) {
-        significand = significand >> 1;
+        significand = significand / BigInteger(2);
         exponent = exponent + BigInteger(1);
     }
     if(sign)
@@ -125,7 +125,7 @@ BigDecimal BigDecimal::operator-(const BigDecimal& b) {
 
     if(new_decimal.exponent > b.exponent) {
         while(new_decimal.exponent > b.exponent) {
-            new_decimal.significand = new_decimal.significand * BigInteger(2); // << breaks test
+            new_decimal.significand = new_decimal.significand * BigInteger(2);
             new_decimal.exponent = new_decimal.exponent - BigInteger(1);
         }
 
@@ -157,20 +157,20 @@ BigDecimal BigDecimal::operator*(const BigDecimal& b) {
 }
 
 BigDecimal BigDecimal::operator/(const BigDecimal& b) {
-    return this->divide(b, 32, Round::symetric_even);
+    return this->divide(b, BigInteger(32), Round::symetric_even);
 }
 
-BigDecimal BigDecimal::divide(const BigDecimal& b, BigInteger precision, Round roundigMode = Round::symetric_even) {
+BigDecimal BigDecimal::divide(const BigDecimal& b, BigInteger precision, BigDecimal::Round roundigMode) {
     if(significand == 0)
         return BigDecimal("0.0");
     BigInteger one = BigInteger(1);
     BigDecimal new_decimal = *this;
 
-    auto precA = new_decimal.significand.size() * 32 - new_decimal.significand.nlz();
-    auto precB = b.significand.size() * 32 - b.significand.nlz();
+    auto precA = new_decimal.significand.size() * 32 - new_decimal.significand.nlz(new_decimal.significand.storage.back());
+    auto precB = b.significand.size() * 32 - b.significand.nlz(b.significand.storage.back());
 
-    // *4, bo jedna cyfra hex kodowana przez 4 cyfry bin
-    auto desiredPrec = precision * 4 + precB - 1;
+    // * 4, bo jedna cyfra hex kodowana przez 4 cyfry bin
+    auto desiredPrec = precision * BigInteger(4) + BigInteger(precB - 1);
     auto newPrec = desiredPrec - precA;
 
     for(auto i = BigInteger(0); i < newPrec; i = i + one) {
@@ -201,7 +201,8 @@ BigDecimal BigDecimal::divide(const BigDecimal& b, BigInteger precision, Round r
         }
         break;
     case Round::cut:
-    defeault:
+		break;
+    default:
         break;
     }
 
@@ -240,6 +241,10 @@ std::string BigDecimal::to_string() {
             ss << "0." << basic_string;
         } else {
             basic_string.insert(basic_string.begin() + (basic_string.size() - offset), '.');
+			if(basic_string[0] == '.')
+				basic_string.insert(basic_string.begin(), '0');
+			if(basic_string[0] == '-' && basic_string[1] == '.')
+				basic_string.insert(basic_string.begin() + 1, '0');
             ss << basic_string;
         }
     } else if(exponent > BigInteger(0)) {
@@ -266,12 +271,6 @@ std::string BigDecimal::to_exponential_notation() {
     return ss.str();
 }
 
-std::string BigDecimal::to_scientific_notation(){
-    std::stringstream ss;
-    ss << significand.to_string() << "E" << (exponent/4).to_string();
-    return ss.str();
-};
-
 void BigDecimal::normalize(BigDecimal& b) {
     if(b.significand.size() == 1 && b.significand[0] == 0)
         b.exponent = BigInteger(0);
@@ -281,5 +280,4 @@ void BigDecimal::normalize(BigDecimal& b) {
             b.exponent = b.exponent + BigInteger(1);
         }
 }
-
 } // namespace oiak

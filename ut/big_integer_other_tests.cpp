@@ -21,25 +21,11 @@ TEST(big_integer_other_tests, size) {
     EXPECT_EQ(x.size(), 5);
 }
 
-TEST(big_integer_other_tests, sign) {
+TEST(big_integer_other_tests, get_sign) {
     std::vector<std::uint32_t> storage = {1, 2, 3, 4, 5};
     auto x = BigInteger(storage);
     x = x * BigInteger(-1);
     EXPECT_TRUE(x.get_sign());
 }
-
-// TEST(big_integer_helper_tests, compare_storages) {
-//    auto x = BigInteger(256);
-//    auto y = BigInteger(-356);
-//    EXPECT_EQ(compareStorage(xy), -1);
-//
-//    x = BigInteger(556);
-//    y = BigInteger(-356);
-//    EXPECT_EQ(x.compareStorage(y), 1);
-//
-//    x = BigInteger(256);
-//    y = BigInteger(256);
-//    EXPECT_EQ(x.compareStorage(y), 0);
-//}
 
 } // namespace ut
