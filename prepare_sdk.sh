@@ -12,4 +12,4 @@ vcpkg/vcpkg install benchmark
 vcpkg/vcpkg integrate install
 mkdir build
 cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DENABLE_UNIT_TESTS=ON -DENABLE_BENCHMARKS=ON
+cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DENABLE_UNIT_TESTS=ON -DENABLE_BENCHMARKS=ON -DCMAKE_BUILD_TYPE=Release
